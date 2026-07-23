@@ -47,8 +47,9 @@ Full diagram, IP scheme, and per-VM RAM/CPU budget: **[docs/architecture.md](doc
 | [`setup/00`–`05`](setup/) | Numbered, teach-as-you-go build guides |
 | [`scripts/ad/`](scripts/ad/) | Idempotent PowerShell to build the domain + inject misconfigs |
 | [`scripts/sysmon/`](scripts/sysmon/) | Sysmon install using the SwiftOnSecurity config |
-| [`wazuh/`](wazuh/) | Single-node Wazuh docker-compose (secrets via gitignored `.env`) |
+| [`wazuh/`](wazuh/) | Single-node Wazuh docker-compose (secrets via gitignored `.env`) + [custom detection rules](wazuh/custom-rules/local_rules.xml) |
 | [`victims/`](victims/) | Vulnerable Linux services as Docker containers |
+| [`projects/`](projects/) | Red→Blue attack/detect walkthroughs (Kerberoasting, AS-REP, DCSync, BloodHound) |
 
 ---
 
@@ -109,6 +110,9 @@ A quick highlight reel of what this repo demonstrates — the parts I'm proudest
 - **🔭 Real detection pipeline.** Sysmon (SwiftOnSecurity config) → Wazuh single-node,
   ending in a live Kerberoast attack that produces a Wazuh alert. →
   [verification](docs/verification.md)
+- **📓 Red→Blue project walkthroughs.** Four end-to-end projects that attack a
+  misconfiguration and then detect it with a matching custom Wazuh rule. →
+  [projects](projects/)
 - **🔐 Secure by construction.** Zero secrets in git — runtime-prompted passwords,
   gitignored `.env`, locally-generated certs, referenced (not vendored) ISOs/configs.
 - **♻️ Reproducible.** Numbered guides + idempotent scripts rebuild the whole lab from

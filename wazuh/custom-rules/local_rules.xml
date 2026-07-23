@@ -1,0 +1,90 @@
+<!--
+  Custom Wazuh detection rules for the security-homelab AD attacks.
+  Each rule maps 1:1 to a project in ../../projects/ and to an intentional
+  misconfiguration from ../../scripts/ad/03-inject-misconfigs.ps1.
+
+  Install: copy this file's <rule> blocks into the manager at
+    /var/ossec/etc/rules/local_rules.xml
+  (e.g. `docker cp local_rules.xml wazuh-lab-wazuh.manager-1:/var/ossec/etc/rules/`)
+  then restart the manager:  /var/ossec/bin/wazuh-control restart
+
+  Rule IDs 100010-100013 are in the user range (>=100000) so they never collide
+  with Wazuh's built-in ruleset. They build on Wazuh's Windows-eventchannel decoding,
+  which exposes fields under data.win.system.* and data.win.eventdata.*.
+
+  Reviewer note: these are the blue-team half of the lab. Each rule detects the exact
+  attack the matching project performs - offense and defense of the same finding.
+-->
+<group name="lab,ad_attacks,windows,">
+
+  <!-- ============================================================
+       100010 - Kerberoasting  (Project 01, misconfig #1)
+       Event 4769 = Kerberos service ticket (TGS) requested.
+       ticketEncryptionType 0x17 = RC4 - the crackable type modern
+       accounts shouldn't use. A burst of these for SPN accounts is
+       the Kerberoast signature.
+       ============================================================ -->
+  <rule id="100010" level="10">
+    <if_group>windows</if_group>
+    <field name="win.system.eventID">^4769$</field>
+    <field name="win.eventdata.ticketEncryptionType">^0x17$</field>
+    <description>Kerberoasting: RC4 (0x17) TGS request for an SPN account [T1558.003]</description>
+    <mitre>
+      <id>T1558.003</id>
+    </mitre>
+    <options>no_full_log</options>
+    <group>kerberoasting,</group>
+  </rule>
+
+  <!-- ============================================================
+       100011 - AS-REP Roasting  (Project 02, misconfig #2)
+       Event 4768 = Kerberos AS-REQ. preAuthType 0 means the account
+       does NOT require pre-authentication - AS-REP roastable.
+       ============================================================ -->
+  <rule id="100011" level="10">
+    <if_group>windows</if_group>
+    <field name="win.system.eventID">^4768$</field>
+    <field name="win.eventdata.preAuthType">^0$</field>
+    <description>AS-REP Roasting: AS-REQ with pre-auth disabled (preAuthType 0) [T1558.004]</description>
+    <mitre>
+      <id>T1558.004</id>
+    </mitre>
+    <options>no_full_log</options>
+    <group>asrep_roasting,</group>
+  </rule>
+
+  <!-- ============================================================
+       100012 - DCSync  (Project 03, misconfig #3)
+       Event 4662 referencing the replication extended-right GUIDs
+       (Get-Changes / Get-Changes-All) by a non-DC principal.
+       ============================================================ -->
+  <rule id="100012" level="12">
+    <if_group>windows</if_group>
+    <field name="win.system.eventID">^4662$</field>
+    <field name="win.eventdata.properties">1131f6aa-9c07-11d1-f79f-00c04fc2dcd2|1131f6ad-9c07-11d1-f79f-00c04fc2dcd2</field>
+    <description>DCSync: directory replication rights exercised (possible domain hash dump) [T1003.006]</description>
+    <mitre>
+      <id>T1003.006</id>
+    </mitre>
+    <options>no_full_log</options>
+    <group>dcsync,</group>
+  </rule>
+
+  <!-- ============================================================
+       100013 - Directory enumeration / BloodHound  (Project 04)
+       High volume of object-access reads (4661/4662) from one user
+       in a short window. Uses frequency+timeframe because enumeration
+       is a *rate* signal, not a single-event signature.
+       ============================================================ -->
+  <rule id="100013" level="8" frequency="15" timeframe="60">
+    <if_matched_group>windows</if_matched_group>
+    <field name="win.system.eventID">^4661$|^4662$</field>
+    <description>Directory enumeration burst (possible BloodHound/SharpHound collection) [T1087]</description>
+    <mitre>
+      <id>T1087.002</id>
+    </mitre>
+    <options>no_full_log</options>
+    <group>ad_enumeration,</group>
+  </rule>
+
+</group>
