@@ -43,6 +43,7 @@ Full diagram, IP scheme, and per-VM RAM/CPU budget: **[docs/architecture.md](doc
 | [`docs/architecture.md`](docs/architecture.md) | Network diagram, IP scheme, RAM/CPU budget, minimum-viable lab |
 | [`docs/low-ram-operating-guide.md`](docs/low-ram-operating-guide.md) | Exactly which VMs to power on per phase + snapshotting |
 | [`docs/verification.md`](docs/verification.md) | Checklist proving the lab works (with screenshot slots) |
+| [`docs/build-log.md`](docs/build-log.md) | Dated record of actually building the lab — what's done & verified |
 | [`docs/reviewer-path.md`](docs/reviewer-path.md) | A 3-minute guided tour for a hiring manager |
 | [`setup/00`–`05`](setup/) | Numbered, teach-as-you-go build guides |
 | [`scripts/ad/`](scripts/ad/) | Idempotent PowerShell to build the domain + inject misconfigs |
