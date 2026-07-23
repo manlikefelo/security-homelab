@@ -14,23 +14,45 @@ guides in order (`00` → `05`).
 
 - **VirtualBox** (free, GPLv2) + the VirtualBox Extension Pack (free for personal use).
   <https://www.virtualbox.org/wiki/Downloads> — verify the SHA-256 published on that
-  page against your download.
+  page against your download. On Windows you can install it in one line with winget:
+  ```powershell
+  winget install --id Oracle.VirtualBox -e --accept-package-agreements --accept-source-agreements
+  ```
+  > I built this lab on **VirtualBox 7.2.12**. The Extension Pack is optional for a
+  > host-only lab (it adds USB2/3 + a couple of niceties we don't need), so I skipped it.
 - 16 GB RAM, ~250 GB free disk, virtualization (VT-x/AMD-V) enabled in BIOS.
 - The host in this repo is **Windows 10 Pro**; all host-side automation is PowerShell.
+- **Point VirtualBox's VM library at a roomy drive** before creating VMs — the app
+  installs to `C:\Program Files` but VMs are large and should not land on a full C::
+  ```powershell
+  & "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe" setproperty machinefolder "D:\path\to\VMs"
+  ```
 
 ## Guest images (all free)
 
-| Guest | Source | Notes |
-|-------|--------|-------|
-| **Windows Server 2022** (DC01) | Microsoft Evaluation Center | 180-day eval, no license key needed |
-| **Windows 10 / 11 Enterprise** (WS01) | Microsoft Evaluation Center | 90-day eval |
-| **Ubuntu Server 22.04 LTS** (UB01, WAZUH01) | ubuntu.com/download/server | LTS |
-| **Kali Linux** (KALI01) | kali.org/get-kali (VirtualBox image) | Pre-built VBox image saves setup |
+These are the **exact versions I used**. Versions drift over time — when a link 404s,
+grab the current point release from the same source and update
+`setup/DOWNLOADS.local` (gitignored).
 
-> Microsoft Eval Center URLs change over time — search
-> "Windows Server 2022 evaluation ISO" and "Windows 10/11 Enterprise evaluation" on
-> `microsoft.com`. Record the exact ISO filename + SHA-256 you downloaded in
-> `setup/DOWNLOADS.local` (gitignored) for your own reproducibility.
+| Guest | Version I used | Source | Notes |
+|-------|----------------|--------|-------|
+| **Windows Server 2022** (DC01) | `SERVER_EVAL_x64FRE_en-us.iso` (4.7 GB) | [MS Evaluation Center](https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2022) | 180-day eval, **no key**. Pick **Standard (Desktop Experience)** at install |
+| **Windows 10 / 11 Enterprise** (WS01) | Enterprise eval | [MS Evaluation Center](https://www.microsoft.com/en-us/evalcenter/) | 90-day eval |
+| **Ubuntu Server 22.04 LTS** (UB01, WAZUH01) | `ubuntu-22.04.5-live-server-amd64.iso` (2.0 GB) | <https://releases.ubuntu.com/22.04/> | direct, no login |
+| **Kali Linux** (KALI01) | `kali-linux-2026.2-installer-amd64.iso` (4.5 GB) | <https://cdimage.kali.org/current/> | full-installer ISO; `/current/` always holds the latest |
+
+> **The Kali/Ubuntu ISOs download directly with no form** — I fetched them in the
+> background while the Windows Server VM installed:
+> ```powershell
+> $dst = "G:\...\ISOs"
+> Start-BitsTransfer -Asynchronous -Source "https://releases.ubuntu.com/22.04/ubuntu-22.04.5-live-server-amd64.iso" -Destination "$dst\ubuntu.iso"
+> Start-BitsTransfer -Asynchronous -Source "https://cdimage.kali.org/current/kali-linux-2026.2-installer-amd64.iso" -Destination "$dst\kali.iso"
+> ```
+> Only the Microsoft images need the eval-center form.
+
+> ⚠️ **Before you start, read [TROUBLESHOOTING.md](TROUBLESHOOTING.md)** — it covers the
+> real issues I hit (an EFI black-screen boot hang, the Hyper-V/VirtualBox coexistence,
+> LDPlayer's conflicting VirtualBox fork) and the fixes, so you don't lose time on them.
 
 ## Reused config sources (referenced, not committed)
 
@@ -56,3 +78,7 @@ guides in order (`00` → `05`).
    containers on UB01.
 
 Then run the checklist in **[../docs/verification.md](../docs/verification.md)**.
+
+**Stuck?** See **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** for the real build issues I
+hit and their fixes (EFI black-screen boot hang, Hyper-V coexistence, stray VirtualBox
+forks, winget failures, disk space, ISO 404s).
