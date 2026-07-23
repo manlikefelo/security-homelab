@@ -5,6 +5,7 @@
 wazuh/config/certs/
 wazuh/config/certs.yml
 setup/DOWNLOADS.local
+docs/SESSION-STATE.md
 *.local
 
 # Credentials / keys that might land here by accident
