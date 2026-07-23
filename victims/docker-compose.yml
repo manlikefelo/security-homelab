@@ -1,0 +1,39 @@
+# Deliberately vulnerable Linux victims, run as containers on UB01 (10.10.10.30).
+#
+# Running victims as containers (not VMs) is a core RAM-saving decision: tearing one
+# down and rebuilding it is `docker compose down/up`, and the whole set costs a
+# fraction of a VM's memory.
+#
+# >>> These images are INTENTIONALLY vulnerable. Only run them on the isolated
+# >>> host-only lab network, never anywhere reachable from a real network. <<<
+
+name: lab-victims
+
+services:
+  # OWASP Juice Shop - modern vulnerable web app (great for web-attack + WAF-style
+  # detection demos). Publishes on http://10.10.10.30:3000
+  juice-shop:
+    image: bkimminich/juice-shop:v17.1.1
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+
+  # DVWA - classic Damn Vulnerable Web App (SQLi, XSS, command injection, file upload).
+  # Publishes on http://10.10.10.30:8080
+  dvwa:
+    image: vulnerables/web-dvwa:latest
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+
+  # Vulnerable SSH target - weak creds for brute-force / lateral-movement demos that
+  # generate auth telemetry the Wazuh agent on UB01 forwards.
+  ssh-victim:
+    image: linuxserver/openssh-server:latest
+    restart: unless-stopped
+    environment:
+      - PASSWORD_ACCESS=true
+      - USER_NAME=labuser
+      - USER_PASSWORD=Password123      # intentionally weak - demo only
+    ports:
+      - "2222:2222"

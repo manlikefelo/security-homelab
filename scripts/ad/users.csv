@@ -1,0 +1,11 @@
+SamAccountName,GivenName,Surname,Department,Title,Group
+a.mokaya,Alice,Mokaya,IT,Systems Administrator,IT-Admins
+b.otieno,Brian,Otieno,IT,Helpdesk Technician,IT-Helpdesk
+c.wanjiru,Carol,Wanjiru,Finance,Accountant,Finance
+d.kimani,David,Kimani,Finance,Finance Manager,Finance
+e.achieng,Esther,Achieng,HR,HR Officer,HR
+f.mutua,Frank,Mutua,Sales,Sales Representative,Sales
+g.njoroge,Grace,Njoroge,Sales,Sales Lead,Sales
+h.barasa,Henry,Barasa,Engineering,Software Engineer,Engineering
+i.chebet,Ivy,Chebet,Engineering,DevOps Engineer,Engineering
+j.omondi,John,Omondi,Executive,Chief Financial Officer,Executives
