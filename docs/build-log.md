@@ -73,8 +73,40 @@ Passwords use a **hybrid scheme** (deliberately weak, varied) so both password-s
 
 ---
 
+## 2026-07-24 — KALI01 online + Project 01 (Kerberoasting) proven
+
+### Attacker box configured
+Kali 2026.2, login `felix`. Driven headless from the host via VBox `guestcontrol`
+(the GUI GDM greeter renders black under VirtualBox — a cosmetic display glitch;
+irrelevant since I run everything by copying scripts in and executing them).
+
+Networking via NetworkManager (`nmcli`), both profiles set to autoconnect:
+- **eth0 = NAT** → DHCP `10.0.2.15`, default route — internet for apt/docker.
+- **eth1 = host-only** → static **`10.10.10.40/24`**, DNS `10.10.10.10`, `never-default`.
+
+Verified from Kali: pings DC01, `nslookup dc01.lab.local` → 10.10.10.10, and public
+internet reachable. Tooling shipped with Kali (no install needed): `impacket-GetUserSPNs`,
+`john` (krb5tgs), `hashcat v7.1.2`, `netexec`.
+
+### Project 01 — Kerberoasting run end-to-end ✅
+As low-priv user `a.mokaya`, `impacket-GetUserSPNs ... -request` pulled the TGS
+(RC4/etype 23) for `svc_sql`. Cracked offline → **`svc_sql : P@ssw0rd`** in <1s.
+Full record + evidence: [`../projects/01-kerberoasting/RUN-LOG.md`](../projects/01-kerberoasting/RUN-LOG.md).
+
+**Real issue hit:** hashcat found no compute backend (`CL_PLATFORM_NOT_FOUND_KHR`) —
+GPU-less VM and Kali 2026.2's mirror had no `pocl` (CPU OpenCL) package. Rather than
+fake the canonical `hashcat -m 13100`, I cracked the identical hash with **John the
+Ripper** on CPU. Documented honestly in the run log.
+
+### Snapshots
+- [x] `clean-install` — fresh Kali before any lab config.
+- [x] `configured-attacker` — net + tooling + Project 01 complete. Revert here to
+      re-run attacks from a known-good attacker state.
+
+---
+
 ## ⬜ Remaining
-- [ ] KALI01 — install, DNS → DC, run Project 01 (Kerberoasting) to prove the attack.
+- [x] KALI01 — installed, DNS → DC, Project 01 (Kerberoasting) proven. ✅
 - [ ] WAZUH01 — Ubuntu + Wazuh single-node SIEM.
 - [ ] WS01 — domain-joined Windows workstation + Sysmon + agent.
 - [ ] UB01 — Docker victim containers.

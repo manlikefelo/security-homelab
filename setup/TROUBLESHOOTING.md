@@ -148,6 +148,27 @@ directory for Ubuntu, and read the actual filename from the listing:
 
 ---
 
+## Kali GNOME desktop renders black / garbled (blank greeter, torn screenshots)
+
+**Symptom.** After installing Kali, the GDM login greeter shows only a black screen
+with a cursor, and `VBoxManage controlvm KALI01 screenshotpng` captures come back black
+or as torn diagonal stripes. The session is actually running — it just isn't rendering.
+
+**Cause.** The default `vboxsvga` graphics controller with 64 MB VRAM doesn't drive the
+Kali GNOME (Wayland) session reliably on this host.
+
+**Fix.** Power the VM off and switch it to **VMSVGA** with **128 MB VRAM**:
+```powershell
+$vbm = "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe"
+& $vbm controlvm KALI01 poweroff              # ensure it's fully off first
+& $vbm modifyvm KALI01 --graphicscontroller vmsvga --vram 128 --accelerate3d off
+& $vbm startvm  KALI01 --type gui
+```
+After this the greeter and desktop render cleanly and screenshots are legible. (If the
+greeter still looks blank for a second after boot, tap Shift once to wake it.)
+
+---
+
 ## Quick host-readiness checklist
 
 ```powershell
