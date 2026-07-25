@@ -169,6 +169,40 @@ greeter still looks blank for a second after boot, tap Shift once to wake it.)
 
 ---
 
+## WAZUH01 (Ubuntu 22.04 server) build gotchas
+
+**Disk controller: install on IDE, then MOVE THE DISK BACK TO SATA to boot.**
+The Debian/Ubuntu *installer* partitioner hangs on SATA/AHCI under this host's
+Hyper-V compat layer (same as Kali), so I installed with the disk on an **IDE (PIIX4)**
+controller. But the *installed* Ubuntu then **hung in initramfs at "Loading essential
+drivers"** because its generic initramfs booted probing AHCI and never found the IDE
+root device. Fix: after the install completes, power off and move the .vdi back to
+**SATA** — Ubuntu boots fine from SATA at runtime (the partitioner hang is an
+installer-only problem). So: **IDE for the install, SATA for running.**
+```powershell
+$vbm storageattach WAZUH01 --storagectl IDE  --port 0 --device 0 --medium none
+$vbm storageattach WAZUH01 --storagectl SATA --port 0 --device 0 --type hdd --medium "<path>.vdi"
+```
+
+**Console framebuffer freezes after early boot (headless is fine).**
+With Ubuntu server the VBox console screenshot freezes on a boot frame and never
+repaints (`vboxvideodrmfb`/`vmwgfx` DRM quirk) — the OS is actually up. Don't trust
+the frozen screen; verify via the network instead. I drove the box over **SSH**: add a
+NAT port-forward and connect to it (no host-only IP needed for the first step).
+```powershell
+$vbm modifyvm WAZUH01 --natpf1 "ssh,tcp,127.0.0.1,2222,,22"   # then ssh felix@127.0.0.1 -p 2222
+```
+
+**apt fails with `file:/cdrom ... no Release file`.** The installer leaves the install
+media in apt sources. Comment it out before any apt install:
+`sudo sed -i -E 's|^([^#].*/cdrom.*)$|# \1|' /etc/apt/sources.list && sudo apt-get update`.
+
+**`dpkg was interrupted`.** Because I reset the VM past the installer's hung
+"downloading security updates" step, package config was left half-done. Finish it once:
+`sudo dpkg --configure -a && sudo apt-get -y -f install`.
+
+---
+
 ## Quick host-readiness checklist
 
 ```powershell
