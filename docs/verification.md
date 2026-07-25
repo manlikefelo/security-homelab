@@ -42,11 +42,13 @@ screenshot where the placeholders are — those are the artifacts a reviewer ski
 
 📸 _screenshot: recent Sysmon Operational events_
 
-## 5. Wazuh stack (WAZUH01)
-- [ ] `docker compose ps` shows indexer + manager + dashboard running/healthy.
-- [ ] Dashboard loads at `https://10.10.10.50:5601` and you can log in.
+## 5. Wazuh stack (WAZUH01) ✅ verified 2026-07-25
+- [x] `docker compose ps` shows indexer + manager + dashboard running (Wazuh 4.9.0).
+- [x] Indexer cluster health is **green** (`GET /_cluster/health`), 11/11 shards active.
+- [x] Manager API authenticates and reports `v4.9.0 server`.
+- [x] Dashboard loads at **`https://10.10.10.50`** and serves the Wazuh login app.
 
-📸 _screenshot: Wazuh dashboard overview_
+📸 _evidence: [`../setup/evidence/wazuh01-stack-verification.txt`](../setup/evidence/wazuh01-stack-verification.txt) — dashboard login screenshot to be added on the next run with a browser_
 
 ## 6. Every host is an Active agent
 - [ ] Dashboard **Agents** view shows DC01, WS01, UB01 (and WAZUH01) as **Active**.

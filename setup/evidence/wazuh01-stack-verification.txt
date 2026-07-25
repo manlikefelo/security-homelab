@@ -1,0 +1,43 @@
+### WAZUH01 stack verification — 2026-07-25 ###
+# Ran on WAZUH01 (Ubuntu Server 22.04.5) after bringing the single-node Wazuh
+# stack up. Confirms all three tiers are healthy and reachable on the lab net.
+
+-- host --
+felix@wazuh01   Ubuntu 22.04.5 LTS
+enp0s3   UP   10.0.2.15/24     (NAT — internet for image pulls)
+enp0s8   UP   10.10.10.50/24   (host-only — isolated lab net, DNS 10.10.10.10)
+
+-- containers (docker compose ps) --
+wazuh2-wazuh.dashboard-1   Up   wazuh/wazuh-dashboard:4.9.0
+wazuh2-wazuh.manager-1     Up   wazuh/wazuh-manager:4.9.0
+wazuh2-wazuh.indexer-1     Up   wazuh/wazuh-indexer:4.9.0
+
+-- indexer health (GET https://localhost:9200/_cluster/health) --
+{
+  "cluster_name" : "opensearch",
+  "status" : "green",
+  "number_of_nodes" : 1,
+  "number_of_data_nodes" : 1,
+  "active_primary_shards" : 11,
+  "active_shards" : 11,
+  "unassigned_shards" : 0,
+  "active_shards_percent_as_number" : 100.0
+}
+
+-- manager (POST /security/user/authenticate -> JWT, GET /manager/info) --
+authenticated OK (JWT issued)
+Wazuh v4.9.0  type: server
+
+-- dashboard (https://10.10.10.50) --
+GET /            -> HTTP 302  redirect to /app/login
+GET /app/login   -> HTTP 200  94649 bytes  <title>Wazuh</title>
+reachable from the host over the host-only network.
+
+-- published ports (ss -tlnp) --
+443   -> dashboard (5601 inside container)
+9200  -> indexer
+55000 -> manager API
+1514  -> agent events        1515 -> agent enrollment        514/udp -> syslog
+
+# Result: blue-side SIEM is live. Next: enroll a Wazuh agent on DC01,
+# load custom rule 100010, and re-run the Kerberoast to catch the 4769/RC4 alert.

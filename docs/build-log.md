@@ -105,9 +105,50 @@ Ripper** on CPU. Documented honestly in the run log.
 
 ---
 
+## 2026-07-25 — WAZUH01 online: single-node Wazuh SIEM up (blue side live)
+
+### Stack brought up and verified ✅
+WAZUH01 (Ubuntu Server 22.04.5, `10.10.10.50`) now runs the full single-node Wazuh
+**4.9.0** stack under docker compose — indexer + manager + dashboard, all healthy:
+
+- **Indexer** (`:9200`) — cluster status **green**, 1 node, 11/11 shards active (100%).
+- **Manager** (`:55000` API, `:1514`/`:1515` agents, `:514/udp` syslog) — API
+  authenticates and reports `Wazuh v4.9.0 server`.
+- **Dashboard** (`:443` → 5601) — serves the Wazuh login app (`/app/login`, HTTP 200),
+  reachable from the host at **`https://10.10.10.50`**.
+
+Full transcript: [`../setup/evidence/wazuh01-stack-verification.txt`](../setup/evidence/wazuh01-stack-verification.txt).
+
+Networking is dual-homed as designed: **enp0s3 = NAT** (`10.0.2.15`, for image pulls)
+and **enp0s8 = host-only** (`10.10.10.50`, isolated lab, DNS → DC01). The stack has a
+`restart` policy so it comes back on its own after a reboot.
+
+### Deviations from setup/03 (recorded honestly)
+- The running deployment is the upstream Wazuh **single-node compose** layout
+  (project at `~/wazuh2`), so it currently ships the stock demo credentials inline and
+  publishes the dashboard on **443** rather than the `.env`-driven `:5601` design in
+  [../setup/03-wazuh-siem.md](../setup/03-wazuh-siem.md). Fine for an **isolated,
+  host-only lab** — flagged to harden (move creds to `.env`, rotate passwords) before
+  this pattern goes anywhere near a routable network.
+- OpenSearch heap is trimmed to **768 MB** (`-Xms768m -Xmx768m`) to fit alongside the
+  other VMs on a 16 GB host.
+
+### Real issues hit (see TROUBLESHOOTING.md)
+- **Host RAM contention wedged the guest.** With DC01 (4 GB) *and* WAZUH01 (6 GB) both
+  running, the host had only ~4 GB free; WAZUH01 thrashed into an unresponsive state —
+  sshd accepted TCP but never sent a banner, and the guest ignored ACPI shutdown. Fix:
+  saved DC01's state to free its RAM, then cold-booted WAZUH01 clean. It came up
+  healthy with ~5.3 GB free and no swap in use. Confirms the phased/low-RAM operating
+  model — the indexer needs its memory to even start.
+- **Adapter drift.** WAZUH01's NAT nic had been left as *bridged*; reset nic1 → NAT and
+  re-added the `127.0.0.1:2222 → :22` SSH port-forward used to drive the box headless
+  (its server console framebuffer freezes after early boot — cosmetic).
+
+---
+
 ## ⬜ Remaining
 - [x] KALI01 — installed, DNS → DC, Project 01 (Kerberoasting) proven. ✅
-- [ ] WAZUH01 — Ubuntu + Wazuh single-node SIEM.
+- [x] WAZUH01 — Ubuntu + Wazuh single-node SIEM up & verified (4.9.0, indexer green). ✅
 - [ ] WS01 — domain-joined Windows workstation + Sysmon + agent.
 - [ ] UB01 — Docker victim containers.
 - [ ] End-to-end detection: attack → Wazuh alert.
