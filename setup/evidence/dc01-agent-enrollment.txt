@@ -1,0 +1,30 @@
+### DC01 Wazuh agent enrollment — 2026-07-25 ###
+# Installed Wazuh agent 4.9.0 on DC01 (10.10.10.10) pointing at the
+# manager on WAZUH01 (10.10.10.50). Agent enrolled and shows Active.
+
+-- agent-side (DC01 ossec.log) --
+wazuh-agent: INFO: Requesting a key from server: 10.10.10.50
+wazuh-agent: INFO: Valid key received
+wazuh-agent: INFO: (4102): Connected to the server ([10.10.10.50]:1514/tcp).
+wazuh-agent: INFO: Agent is now online.
+
+-- manager-side (agent_control -l) --
+
+Wazuh agent_control. List of available agents:
+   ID: 000, Name: wazuh.manager (server), IP: 127.0.0.1, Active/Local
+   ID: 001, Name: DC01, IP: any, Active
+
+List of agentless devices:
+
+
+-- manager-side (agent_control -i 001) --
+   Agent ID:   001
+   Agent Name: DC01
+   Status:     Active
+   Operating system:    Microsoft Windows Server 2022 Standard Evaluation
+   Client version:      Wazuh v4.9.0
+
+# Note: agent also configured to collect the Sysmon eventchannel; that
+# subscription errors with 15007 until Sysmon is installed on DC01 (guide 04
+# Part A). The Windows Security log (event 4769) is collected regardless,
+# which is what the Kerberoasting detection relies on.

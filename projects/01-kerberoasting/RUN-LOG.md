@@ -78,14 +78,50 @@ password with **no elevation and no interaction with the target service** — a
 realistic foothold-to-escalation step. `svc_sql`'s credentials can now be reused
 (e.g. against the SQL service, or as a spray/pivot candidate).
 
-## What's next (blue phase)
-This attack writes **Event ID 4769** on DC01 with `Ticket Encryption Type 0x17` for
-`svc_sql`. Once WAZUH01 is up, the detection rule (`100010`) for RC4 TGS bursts should
-fire on this exact run. See [README.md §4](README.md).
+## Blue phase — detection fired (2026-07-25)
+
+With WAZUH01 up and a Wazuh agent enrolled on DC01, I re-ran the Kerberoast (all three
+VMs live: DC01 + KALI01 + WAZUH01) and the detection worked end-to-end.
+
+**Setup for this run:**
+- Wazuh agent 4.9.0 installed on DC01, reporting to the manager on `10.10.10.50`
+  (shows **Active**, id 001).
+- Custom rule **100010** loaded into the manager
+  (`/var/ossec/etc/rules/local_rules.xml`) and the manager restarted to pick it up.
+- DC01 already audits *Kerberos Service Ticket Operations* (Success), so the TGS
+  request generates **Event 4769**.
+
+**Result:** the same `impacket-GetUserSPNs` request from KALI01 (`10.10.10.40`)
+produced a 4769 on DC01, the agent shipped it, and rule 100010 matched. In the Wazuh
+dashboard, filtering `rule.id:100010` returns exactly **1 hit** with:
+
+| Field | Value |
+|-------|-------|
+| rule.id / level | **100010** / 10 |
+| rule.description | Kerberoasting: RC4 (0x17) TGS request for an SPN account [T1558.003] |
+| agent.name | DC01 |
+| data.win.system.eventID | **4769** |
+| data.win.eventdata.ticketEncryptionType | **0x17** (RC4) |
+| data.win.eventdata.serviceName | **svc_sql** |
+| data.win.eventdata.targetUserName | a.mokaya@LAB.LOCAL |
+| data.win.eventdata.ipAddress | ::ffff:**10.10.10.40** (the attacker, KALI01) |
+
+That closes the loop for misconfig #1: the **same finding** is both exploited
+(red) and detected (blue).
+
+> **Note on the rule field path:** the rule keys on `win.eventdata.ticketEncryptionType`
+> from Wazuh's Windows-eventchannel decoder. A `wazuh-logtest` dry-run with hand-built
+> JSON won't match (it decodes as generic `json`, never entering the `windows` group) —
+> only a real agent-sourced 4769 decodes correctly. The live run is the real test, and
+> it matched.
+>
+> **Dashboard note:** the fresh stack shipped with no index pattern, so Discover showed
+> nothing at first. I created the `wazuh-alerts-*` index pattern (time field
+> `timestamp`) and set it as default; the alert then rendered in the UI.
 
 ## Evidence
 
-Screenshots captured live from the KALI01 GUI terminal (2026-07-24):
+**Red phase** — screenshots captured live from the KALI01 GUI terminal (2026-07-24):
 
 | # | Shot | What it shows |
 |---|------|---------------|
@@ -93,11 +129,17 @@ Screenshots captured live from the KALI01 GUI terminal (2026-07-24):
 | 2 | [`evidence/02-getuserspns-svc_sql.png`](evidence/02-getuserspns-svc_sql.png) | `impacket-GetUserSPNs` as `a.mokaya` enumerating the `svc_sql` SPN and requesting the TGS |
 | 3 | [`evidence/03-john-cracks-password.png`](evidence/03-john-cracks-password.png) | John cracking the RC4 TGS → **`svc_sql : P@ssw0rd`** |
 
+**Blue phase** — screenshots from the Wazuh dashboard at `https://10.10.10.50` (2026-07-25):
+
+| # | Shot | What it shows |
+|---|------|---------------|
+| 4 | [`evidence/04-wazuh-login.png`](evidence/04-wazuh-login.png) | Wazuh dashboard login (stack live on the lab net) |
+| 5 | [`evidence/05-wazuh-kerberoast-alert.png`](evidence/05-wazuh-kerberoast-alert.png) | Discover filtered to `rule.id:100010` — **1 hit**, showing 4769 / RC4 (0x17) / `svc_sql` from DC01, source `10.10.10.40` |
+| 6 | [`evidence/06-wazuh-alert-detail.png`](evidence/06-wazuh-alert-detail.png) | The alert's expanded document — full `data.win.*` field table for the Kerberoast event |
+
 Raw command output:
 - [`evidence/getuserspns_output.txt`](evidence/getuserspns_output.txt) — SPN enumeration + TGS request
 - [`evidence/john_output.txt`](evidence/john_output.txt) — offline crack recovering `P@ssw0rd`
-
-- 📸 _TODO:_ Wazuh alert screenshot once blue phase is built.
 
 > **Display note:** capturing legible GUI screenshots required switching KALI01's
 > graphics controller to **VMSVGA with 128 MB VRAM** (`VBoxManage modifyvm KALI01

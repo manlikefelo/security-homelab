@@ -50,11 +50,11 @@ screenshot where the placeholders are — those are the artifacts a reviewer ski
 
 📸 _evidence: [`../setup/evidence/wazuh01-stack-verification.txt`](../setup/evidence/wazuh01-stack-verification.txt) — dashboard login screenshot to be added on the next run with a browser_
 
-## 6. Every host is an Active agent
-- [ ] Dashboard **Agents** view shows DC01, WS01, UB01 (and WAZUH01) as **Active**.
-- [ ] `agent_control -l` in the manager container lists the same agents.
+## 6. Every host is an Active agent  (DC01 done 2026-07-25)
+- [x] **DC01** enrolled and **Active** — `agent_control -l` lists `ID: 001, DC01, Active`.
+- [ ] WS01, UB01 agents (pending those hosts being built).
 
-📸 _screenshot: Wazuh Agents page with all hosts Active_
+📸 _screenshot: Wazuh Agents / alert shows `agent.name: DC01` (see project 01 evidence 05)_
 
 ## 7. End-to-end: Windows event + Sysmon reach the SIEM
 - [ ] Run `whoami /all` on WS01.
@@ -64,12 +64,12 @@ screenshot where the placeholders are — those are the artifacts a reviewer ski
 
 📸 _screenshot: the Sysmon process-create event for WS01 in Wazuh_
 
-## 8. End-to-end: a real detection fires
-- [ ] From KALI01, Kerberoast `svc_sql` (e.g. `GetUserSPNs.py lab.local/a.mokaya -request`).
-- [ ] In Wazuh, confirm a Kerberos TGS (Event 4769, RC4) alert appears for the SPN
-      account — the detection of misconfig #1.
+## 8. End-to-end: a real detection fires  ✅ 2026-07-25
+- [x] From KALI01, Kerberoasted `svc_sql` (`impacket-GetUserSPNs lab.local/a.mokaya -request`).
+- [x] Wazuh **rule 100010** fired: Kerberos TGS (Event 4769, RC4 0x17) alert for `svc_sql`,
+      agent DC01, source `10.10.10.40` — the detection of misconfig #1.
 
-📸 _screenshot: the Kerberoasting-related alert in Wazuh_
+📸 _evidence: [`../projects/01-kerberoasting/evidence/05-wazuh-kerberoast-alert.png`](../projects/01-kerberoasting/evidence/05-wazuh-kerberoast-alert.png) + [`06-wazuh-alert-detail.png`](../projects/01-kerberoasting/evidence/06-wazuh-alert-detail.png)_
 
 ---
 

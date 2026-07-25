@@ -146,9 +146,38 @@ and **enp0s8 = host-only** (`10.10.10.50`, isolated lab, DNS → DC01). The stac
 
 ---
 
+## 2026-07-25 (cont.) — DC01 agent enrolled + Kerberoast DETECTED (red→blue loop closed)
+
+Installed the **Wazuh agent 4.9.0 on DC01** pointing at the manager (`10.10.10.50`);
+it enrolled ("Valid key received" → "Agent is now online") and shows **Active** (id
+001) via `agent_control -l`. Set the service to Automatic so it survives reboots.
+
+Loaded custom rule **100010** into the manager (`/var/ossec/etc/rules/local_rules.xml`)
+and restarted it. DC01 already audits *Kerberos Service Ticket Operations*, so TGS
+requests generate **Event 4769**.
+
+Re-ran **Project 01 Kerberoasting** with all three VMs up (DC01 + KALI01 + WAZUH01).
+The `GetUserSPNs` request from KALI01 produced a 4769/RC4 event on DC01 → the agent
+shipped it → **rule 100010 fired**. In the dashboard, `rule.id:100010` returns 1 hit
+with the right fields (eventID 4769, ticketEncryptionType 0x17, serviceName svc_sql,
+source `10.10.10.40`). Full record + dashboard screenshots:
+[`../projects/01-kerberoasting/RUN-LOG.md`](../projects/01-kerberoasting/RUN-LOG.md).
+
+**Issues hit / notes:**
+- The agent's Sysmon eventchannel subscription errors `15007` until Sysmon is
+  installed on DC01 (guide 04 Part A) — irrelevant to this detection, which uses the
+  Security log.
+- The fresh dashboard had **no index pattern**, so Discover was empty; created
+  `wazuh-alerts-*` (time field `timestamp`) and set it default before alerts rendered.
+- 3-VM RAM squeeze on the 16 GB host: trimmed KALI01 to 2 GB for the attack run so all
+  three fit without thrashing.
+
+---
+
 ## ⬜ Remaining
 - [x] KALI01 — installed, DNS → DC, Project 01 (Kerberoasting) proven. ✅
 - [x] WAZUH01 — Ubuntu + Wazuh single-node SIEM up & verified (4.9.0, indexer green). ✅
+- [x] DC01 Wazuh agent enrolled (Active) + Kerberoast detected via rule 100010. ✅
 - [ ] WS01 — domain-joined Windows workstation + Sysmon + agent.
 - [ ] UB01 — Docker victim containers.
 - [ ] End-to-end detection: attack → Wazuh alert.
