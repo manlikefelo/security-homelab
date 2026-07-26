@@ -1,0 +1,15 @@
+ComputerName=WS01
+PartOfDomain=True
+Domain=lab.local
+SecureChannel=True
+DSGETDC:
+           DC: \\DC01.lab.local
+      Address: \\10.10.10.10
+     Dom Guid: 4dd0d40f-c080-4809-b64d-dbc5d5dc8116
+     Dom Name: lab.local
+  Forest Name: lab.local
+ Dc Site Name: Default-First-Site-Name
+Our Site Name: Default-First-Site-Name
+        Flags: PDC GC DS LDAP KDC TIMESERV GTIMESERV WRITABLE DNS_DC DNS_DOMAIN DNS_FOREST CLOSE_SITE FULL_SECRET WS DS_8 DS_9 DS_10 KEYLIST
+The command completed successfully
+

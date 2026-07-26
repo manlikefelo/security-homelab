@@ -1,0 +1,15 @@
+
+Wazuh agent_control. Agent information:
+   Agent ID:   002
+   Agent Name: WS01
+   IP address: any
+   Status:     Active
+
+   Operating system:    Microsoft Windows 11 Enterprise Evaluation
+   Client version:      Wazuh v4.9.0
+   Configuration hash:  ab73af41699f13fdd81903b5f23d8d00
+   Shared file hash:    4a8724b20dee0124ff9656783c490c4e
+   Last keep alive:     1785081737
+
+   Syscheck last started at:  Sun Jul 26 15:59:10 2026 (Scan in progress)
+   Syscheck last ended at:    Unknown

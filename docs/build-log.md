@@ -174,10 +174,51 @@ source `10.10.10.40`). Full record + dashboard screenshots:
 
 ---
 
+## 2026-07-26 — WS01 built: Win11 client domain-joined + Sysmon + Wazuh agent (Active)
+
+Stood up **WS01**, the domain-joined Windows workstation.
+
+- **OS:** installed **Windows 11 25H2 Enterprise Evaluation** (build 26100, free 90-day,
+  no key) — downloaded via the Microsoft Evaluation Center fwlink. Surprise win:
+  **EFI boots fine on this Win11 build** (my earlier VMs went BIOS because EFI
+  black-screened), so WS01 runs EFI + vTPM 2.0 and needed no TPM-bypass. Boot the ISO
+  from the UEFI **Boot Manager** — the "press any key to boot from CD" prompt times out
+  faster than host scancode injection can catch it.
+- **Identity/network:** renamed the OOBE-generated `DESKTOP-HKAKI8M` → **WS01**; local
+  admin is `workstation 1` (has a space). Ethernet = NAT DHCP (internet), Ethernet 2 =
+  host-only static **10.10.10.20/24**, DNS **10.10.10.10**.
+- **Domain join:** joined **lab.local** and verified `PartOfDomain=True` +
+  `Test-ComputerSecureChannel = True`. The logon screen now shows the domain
+  "Other user" tile.
+- **Telemetry:** installed **Sysmon** (SwiftOnSecurity config, `scripts/sysmon/`) — config
+  validated, service Running, logging Event ID 1. Installed the **Wazuh agent 4.9.0**
+  pointing at the manager `10.10.10.50`, added the Sysmon eventchannel to `ossec.conf`.
+  It enrolled as **ID 002** and the manager reports it **Active** with its real OS
+  string + live keep-alive → it's actively reporting.
+
+**Issues hit / notes:**
+- **Driving Win11 headless is the hard part.** VBox guestcontrol runs *non-elevated*
+  and Win11's UAC uses the secure desktop, which can't be clicked/keyboarded from the
+  host. Fix: one interactive admin run of `C:\lab\netconfig.ps1` that set the IP,
+  renamed the box, **and set `EnableLUA=0`** — after the reboot guestcontrol gets a full
+  admin token, so all later steps (join, Sysmon, agent) ran hands-off.
+- **RAM squeeze (the recurring one):** DC01(4)+WS01(4)+WAZUH01(6) on a 16 GB host pinned
+  free RAM to ~1.8 GB and **WAZUH01 thrashed** — sshd accepted TCP but never sent a
+  banner and Docker stalled. Powered DC01 off (it isn't needed to verify a Windows
+  agent — only the target host + WAZUH01 are), freed 4 GB, reset WAZUH01, and the stack
+  came up clean. Verified enrollment via SSH over the `127.0.0.1:2222` NAT forward.
+- Agent showed registered (`client.keys` had `002 WS01`) but wasn't in `agent_control -l`
+  until I **restarted `WazuhSvc`** so it reconnected to the freshly-recovered manager.
+
+Evidence: [`../setup/evidence/ws01/`](../setup/evidence/ws01/) (EFI boot, installer,
+joined logon screen, `agent_control` Active list + WS01 agent detail).
+
+---
+
 ## ⬜ Remaining
 - [x] KALI01 — installed, DNS → DC, Project 01 (Kerberoasting) proven. ✅
 - [x] WAZUH01 — Ubuntu + Wazuh single-node SIEM up & verified (4.9.0, indexer green). ✅
 - [x] DC01 Wazuh agent enrolled (Active) + Kerberoast detected via rule 100010. ✅
-- [ ] WS01 — domain-joined Windows workstation + Sysmon + agent.
+- [x] WS01 — Win11 domain-joined workstation + Sysmon + agent **Active**. ✅
 - [ ] UB01 — Docker victim containers.
 - [ ] End-to-end detection: attack → Wazuh alert.

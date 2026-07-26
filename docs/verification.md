@@ -27,20 +27,24 @@ screenshot where the placeholders are — those are the artifacts a reviewer ski
 
 📸 _screenshot: `Get-ADUser -Filter *` table + the svc_sql SPN_
 
-## 3. Domain join (WS01)
-- [ ] `(Get-CimInstance Win32_ComputerSystem).Domain` on WS01 = `lab.local`.
-- [ ] A domain user (`LAB\a.mokaya`) can log in interactively on WS01.
-- [ ] WS01 appears under **AD Users and Computers → Computers** on DC01.
+## 3. Domain join (WS01) ✅ verified 2026-07-26
+- [x] `(Get-CimInstance Win32_ComputerSystem).Domain` on WS01 = `lab.local`
+      (also `PartOfDomain=True`).
+- [x] Secure channel to the DC is healthy: `Test-ComputerSecureChannel` = **True**.
+- [x] Logon screen shows the domain **"Other user"** tile (domain-join indicator).
+- [ ] A domain user (`LAB\a.mokaya`) interactive login — deferred (agent/telemetry
+      work is driven headless via guestcontrol; not required for the join proof).
 
-📸 _screenshot: WS01 System properties showing domain `lab.local`_
+📸 _evidence: [`../setup/evidence/ws01/07-domain-join-verified.txt`](../setup/evidence/ws01/07-domain-join-verified.txt) + [`04-joined-desktop.png`](../setup/evidence/ws01/04-joined-desktop.png) (logon screen with domain "Other user")_
 
-## 4. Sysmon telemetry (DC01, WS01)
-- [ ] `Get-Service Sysmon64` = Running.
-- [ ] `Get-WinEvent -LogName 'Microsoft-Windows-Sysmon/Operational' -MaxEvents 5`
-      returns recent events (IDs 1/3).
-- [ ] The SwiftOnSecurity config is loaded (`Sysmon64.exe -c` shows the schema).
+## 4. Sysmon telemetry (DC01, WS01) — WS01 ✅ 2026-07-26
+- [x] **WS01** `Get-Service Sysmon64` = **Running** (Sysmon v15.21).
+- [x] **WS01** `Get-WinEvent -LogName 'Microsoft-Windows-Sysmon/Operational'` returns
+      recent events including **ID 1 (process create)**.
+- [x] SwiftOnSecurity config loaded — installer reported *"Configuration file
+      validated"* (schema 4.50) via `scripts/sysmon/install-sysmon.ps1`.
 
-📸 _screenshot: recent Sysmon Operational events_
+📸 _screenshot: recent Sysmon Operational events (WS01)_
 
 ## 5. Wazuh stack (WAZUH01) ✅ verified 2026-07-25
 - [x] `docker compose ps` shows indexer + manager + dashboard running (Wazuh 4.9.0).
@@ -50,11 +54,17 @@ screenshot where the placeholders are — those are the artifacts a reviewer ski
 
 📸 _evidence: [`../setup/evidence/wazuh01-stack-verification.txt`](../setup/evidence/wazuh01-stack-verification.txt) — dashboard login screenshot to be added on the next run with a browser_
 
-## 6. Every host is an Active agent  (DC01 done 2026-07-25)
+## 6. Every host is an Active agent  (DC01 2025-07-25 · WS01 2026-07-26)
 - [x] **DC01** enrolled and **Active** — `agent_control -l` lists `ID: 001, DC01, Active`.
-- [ ] WS01, UB01 agents (pending those hosts being built).
+- [x] **WS01** enrolled and **Active** — `ID: 002, WS01, Active`. Manager reports its OS
+      (`Windows 11 Enterprise Evaluation`), agent `v4.9.0`, and a live keep-alive, so it
+      is actively reporting — not just registered.
+- [ ] UB01 agent (pending that host being built).
 
-📸 _screenshot: Wazuh Agents / alert shows `agent.name: DC01` (see project 01 evidence 05)_
+> RAM note: DC01 shows *Disconnected* whenever it is powered off to fit the phase (see
+> `docs/low-ram-operating-guide.md`); WS01+WAZUH01 is the phase used to verify this.
+
+📸 _evidence: [`../setup/evidence/ws01/05-agent-control-active.txt`](../setup/evidence/ws01/05-agent-control-active.txt) (000/001/002 list) + [`06-ws01-agent-detail.txt`](../setup/evidence/ws01/06-ws01-agent-detail.txt) (WS01 Active + OS/version)_
 
 ## 7. End-to-end: Windows event + Sysmon reach the SIEM
 - [ ] Run `whoami /all` on WS01.
