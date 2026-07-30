@@ -1,0 +1,4 @@
+﻿$krb5asrep$23$b.otieno@LAB.LOCAL:Password1
+
+1 password hash cracked, 0 left
+
