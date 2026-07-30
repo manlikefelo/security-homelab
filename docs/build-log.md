@@ -23,13 +23,16 @@ confirmed myself.
 | VM | RAM | vCPU | Disk | Firmware |
 |----|-----|------|------|----------|
 | DC01 | 4 GB | 2 | 50 GB | BIOS* |
-| WS01 | 4 GB | 2 | 50 GB | (tbd) |
-| UB01 | 2 GB | 1 | 20 GB | — |
-| KALI01 | 4 GB | 2 | 50 GB | — |
-| WAZUH01 | 6 GB | 2 | 50 GB | — |
+| WS01 | 4 GB | 2 | 50 GB | EFI† |
+| UB01 | 2 GB | 1 | 20 GB | BIOS |
+| KALI01 | 4 GB | 2 | 50 GB | BIOS |
+| WAZUH01 | 6 GB | 2 | 50 GB | BIOS |
 
 \* Switched DC01 from EFI → BIOS after an EFI black-screen boot hang under the
-Hyper-V compatibility layer (TROUBLESHOOTING #1).
+Hyper-V compatibility layer (TROUBLESHOOTING #1). The Linux VMs (UB01, KALI01,
+WAZUH01) use BIOS for the same reason.
+† WS01 is the exception: the **Win11 25H2 Enterprise Eval** build boots EFI cleanly
+on this host (vTPM 2.0 + Secure Boot), so it runs UEFI where the older images could not.
 
 ## ISOs downloaded (exact versions)
 - `SERVER_EVAL_x64FRE_en-us.iso` (Windows Server 2022, 4.7 GB) — MS Eval Center.
@@ -215,10 +218,50 @@ joined logon screen, `agent_control` Active list + WS01 agent detail).
 
 ---
 
+## 2026-07-30 — UB01 built: Linux victim box + Docker victims + Wazuh agent (Active)
+
+Stood up **UB01**, the Linux victim host — the last VM. Per the architecture it runs the
+vulnerable Linux services as **Docker containers** rather than extra VMs, to save RAM.
+
+- **OS install:** Ubuntu Server **22.04.5**, static **10.10.10.30/24**, DNS **10.10.10.10**,
+  user `felix`. The server console framebuffer freezes right after early boot (same
+  cosmetic glitch as WAZUH01), so the interactive Subiquity installer can't be driven by
+  screenshot. I switched to an **autoinstall (cloud-init) seed** — a `cidata` ISO with
+  `user-data`/`meta-data` — and passed the `autoinstall` kernel arg by blind-typing it
+  into GRUB via scancodes. The install then ran unattended and reproducibly.
+- **Victims:** installed Docker (29.1.3) + compose v2 and brought up
+  [`victims/docker-compose.yml`](../victims/docker-compose.yml) — **Juice Shop** (:3000),
+  **DVWA** (:8080), and a weak **SSH victim** (:2222). All three verified serving over the
+  lab net (HTTP 200 / SSH banner). Snapshot **`configured-victim`**.
+- **Telemetry:** installed the **Wazuh agent 4.9.0** (`WAZUH_MANAGER=10.10.10.50`).
+  Enrolled and reports **Active** (id **004**). Evidence in
+  [`../setup/evidence/ub01/`](../setup/evidence/ub01/).
+
+**Issues hit / notes:**
+- **Boot wedges on 1 vCPU.** The first post-install boots hung (kernel `soft lockup —
+  CPU#1 stuck`) and the VM got stuck "stopping". Fix: bumped UB01 to **2 vCPU / 3 GB** and
+  added PAE + nested paging + IOAPIC — it then boots cleanly.
+- **sshd didn't start** on first boot: the removed cidata seed made cloud-init's final
+  stage fail, so SSH host keys were never generated. Fix: logged in blind at the tty
+  console (scancode typing), ran `ssh-keygen -A` + `systemctl enable --now ssh`, then
+  **disabled cloud-init** (`/etc/cloud/cloud-init.disabled`) so it's stable across reboots.
+- **Agent enrolled but stuck "Unknown" (`Last keep alive: null`).** The manager held a
+  stale registration whose key didn't match the agent's, so keep-alives were silently
+  rejected. Fix: removed the stale agent on the manager (`manage_agents -r`) and
+  re-enrolled fresh via `agent-auth` → new matching key, agent went **Active** (new id 004).
+- **`sudo` on WAZUH01 needs a password** (felix isn't NOPASSWD there, unlike UB01), so
+  headless `sudo docker …` calls hung on the invisible password prompt until I switched to
+  `sudo -S` with the password piped in. Not a fault — a driving gotcha worth recording.
+- **RAM phasing held:** the agent-verify phase ran **UB01 + WAZUH01 only** (DC01/WS01 off).
+  Even so, UB01(3)+WAZUH01(6) pins free host RAM to ~2 GB — fine for verification but not
+  a phase to leave running.
+
+---
+
 ## ⬜ Remaining
 - [x] KALI01 — installed, DNS → DC, Project 01 (Kerberoasting) proven. ✅
 - [x] WAZUH01 — Ubuntu + Wazuh single-node SIEM up & verified (4.9.0, indexer green). ✅
 - [x] DC01 Wazuh agent enrolled (Active) + Kerberoast detected via rule 100010. ✅
 - [x] WS01 — Win11 domain-joined workstation + Sysmon + agent **Active**. ✅
-- [ ] UB01 — Docker victim containers.
-- [ ] End-to-end detection: attack → Wazuh alert.
+- [x] UB01 — Ubuntu + Docker victims (Juice Shop/DVWA/SSH) + Wazuh agent **Active** (id 004). ✅
+- [ ] Projects 02 (AS-REP) / 03 (DCSync) / 04 (BloodHound) — run each attack → Wazuh alert.

@@ -59,7 +59,10 @@ screenshot where the placeholders are — those are the artifacts a reviewer ski
 - [x] **WS01** enrolled and **Active** — `ID: 002, WS01, Active`. Manager reports its OS
       (`Windows 11 Enterprise Evaluation`), agent `v4.9.0`, and a live keep-alive, so it
       is actively reporting — not just registered.
-- [ ] UB01 agent (pending that host being built).
+- [x] **UB01** enrolled and **Active** — `ID: 004, UB01, Active` (2026-07-30). Manager
+      reports its OS (`Linux ub01 5.15.0-186-generic x86_64`), agent `v4.9.0`, and a real
+      `Last keep alive`, so it is actively reporting. (ID is 004, not 003 — a stale 003
+      registration with a mismatched key was removed and the agent re-enrolled fresh.)
 
 > RAM note: DC01 shows *Disconnected* whenever it is powered off to fit the phase (see
 > `docs/low-ram-operating-guide.md`); WS01+WAZUH01 is the phase used to verify this.

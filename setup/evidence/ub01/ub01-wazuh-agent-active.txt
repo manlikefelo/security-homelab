@@ -1,0 +1,65 @@
+﻿=== UB01 Wazuh agent enrollment (manager side) ===
+
+Thu Jul 30 16:58:17 UTC 2026
+
+
+
+
+
+
+Wazuh agent_control. List of available agents:
+
+
+   ID: 000, Name: wazuh.manager (server), IP: 127.0.0.1, Active/Local
+
+
+   ID: 001, Name: DC01, IP: any, Disconnected
+
+
+   ID: 002, Name: WS01, IP: any, Disconnected
+
+
+   ID: 004, Name: UB01, IP: any, Active
+
+
+
+
+
+List of agentless devices:
+
+
+
+
+
+
+
+=== Agent 004 (UB01) detail ===
+
+
+
+Wazuh agent_control. Agent information:
+
+   Agent ID:   004
+
+   Agent Name: UB01
+
+   IP address: any
+
+   Status:     Active
+
+
+
+   Operating system:    Linux |ub01 |5.15.0-186-generic |#196-Ubuntu SMP Sat Jun 20 16:09:34 UTC 2026 |x86_64
+
+   Client version:      Wazuh v4.9.0
+
+   Configuration hash:  ab73af41699f13fdd81903b5f23d8d00
+
+   Shared file hash:    4a8724b20dee0124ff9656783c490c4e
+
+   Last keep alive:     1785430691
+
+
+
+   Syscheck last started at:  Thu Jul 30 16:56:42 2026
+

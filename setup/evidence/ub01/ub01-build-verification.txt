@@ -1,0 +1,54 @@
+﻿=== UB01 build verification ===
+
+Thu Jul 30 15:18:48 UTC 2026
+
+
+
+# OS / host
+
+ Static hostname: ub01
+
+       Icon name: computer-vm
+
+         Chassis: vm
+
+      Machine ID: 532d20fc9aa24e988bcb630f806d78d7
+
+         Boot ID: 278decdc6159424bbd5fadd9cdbf3823
+
+  Virtualization: oracle
+
+
+
+# Network
+
+2: enp0s3    inet 10.0.2.15/24 metric 100 brd 10.0.2.255 scope global dynamic enp0s3\       valid_lft 85394sec preferred_lft 85394sec
+
+3: enp0s8    inet 10.10.10.30/24 brd 10.10.10.255 scope global enp0s8\       valid_lft forever preferred_lft forever
+
+
+
+# Docker
+
+Docker version 29.1.3, build 29.1.3-0ubuntu3~22.04.2
+
+Docker Compose version 2.40.3+ds1-0ubuntu1~22.04.1
+
+
+
+# Victim containers
+
+lab-victims-juice-shop-1  Up 55 seconds  0.0.0.0:3000->3000/tcp, [::]:3000->3000/tcp
+
+lab-victims-ssh-victim-1  Up 55 seconds  0.0.0.0:2222->2222/tcp, [::]:2222->2222/tcp
+
+lab-victims-dvwa-1  Up 54 seconds  0.0.0.0:8080->80/tcp, [::]:8080->80/tcp
+
+
+
+# sshd / docker enabled at boot
+
+enabled
+
+enabled
+
