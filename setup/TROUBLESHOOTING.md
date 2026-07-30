@@ -203,6 +203,78 @@ media in apt sources. Comment it out before any apt install:
 
 ---
 
+## Wazuh manager comes up but agents stay "Unknown" / connection refused
+
+**Symptom.** After booting WAZUH01, the containers all show `Up`, the host publishes
+1514/1515, but DC01's agent log loops `Unable to connect to '[10.10.10.50]:1514/tcp':
+... actively refused` and `agent_control -l` inside the manager shows every agent as
+**Unknown**. `docker exec ... wazuh-control status` reveals `wazuh-remoted`,
+`wazuh-analysisd`, `wazuh-authd` **not running**, and the manager's `ossec.log` is full
+of `Unable to connect to socket 'queue/db/wdb' ... Connection refused (111)`.
+
+**Cause.** On this 6 GB (squeezed to 4 GB), memory-thrashing VM, `wazuh-db` (wdb)
+occasionally fails to come up cleanly at boot. Because every other daemon
+(analysisd/remoted/authd) depends on the wdb socket, they all stay down — so the
+host's docker-proxy accepts the agent's TCP SYN but the backend refuses it.
+
+**Fix.** Restart the manager container so init re-runs in order (wdb first):
+```bash
+sudo docker restart wazuh2-wazuh.manager-1
+# wait ~90s, then confirm the daemons and agent:
+sudo docker exec wazuh2-wazuh.manager-1 /var/ossec/bin/wazuh-control status | grep -E 'wdb|remoted|analysisd'
+sudo docker exec wazuh2-wazuh.manager-1 /var/ossec/bin/agent_control -l
+```
+The agent reconnects as **Active** within a minute of `remoted` coming up.
+
+---
+
+## Dashboard login rejects the `.env` password (401)
+
+**Symptom.** `admin` + the `INDEXER_PASSWORD` from `wazuh/.env` returns *Invalid
+username or password* in the dashboard, and a direct check is 401:
+`docker exec ...indexer... curl -k -u admin:<env-pw> https://localhost:9200/ -> 401`.
+
+**Cause.** Editing `INDEXER_PASSWORD` in `.env` does **not** re-hash the password inside
+the indexer's OpenSearch security index — that only happens if `securityadmin.sh` is
+re-run against the new `internal_users.yml`. If that step was skipped, the indexer is
+still running with the **stock demo password `SecretPassword`**.
+
+**Fix (lab).** Log in with `admin` / `SecretPassword`. To actually harden it, set the
+hash in `internal_users.yml` and run the securityadmin tool, then restart. (Noted as a
+follow-up; the lab is isolated so the demo password is acceptable for now.)
+
+---
+
+## Driving the Kali GNOME (Wayland) GUI headlessly from the host
+
+Useful when capturing dashboard screenshots without a mouse on the host:
+
+- **The GDM greeter renders black to `screenshotpng` until it's fully drawn** — wait
+  for `gdm.service` to start, then tap a key once (`keyboardputscancode 39 b9`) and it
+  paints. Log in blind: the greeter pre-focuses the password field, so
+  `keyboardputstring '<pw>'` + Enter works.
+- **Keyboard injection (`keyboardputscancode`/`keyboardputstring`) is reliable**; use it
+  for everything — Ctrl+L to focus Firefox's address bar (`1d 26 a6 9d`), typing URLs,
+  accepting the self-signed cert (Tab to *Advanced* → Enter, scroll *End*, Tab to
+  *Accept the Risk and Continue* → Enter), and filling login forms.
+- **Launch Firefox at a URL from the session env** rather than fighting window focus —
+  export the running session's `DISPLAY`/`WAYLAND_DISPLAY`/`XAUTHORITY`/
+  `DBUS_SESSION_BUS_ADDRESS`/`XDG_RUNTIME_DIR` (read them from
+  `/proc/$(pgrep firefox-esr)/environ`) then `firefox --new-window "<url>" &`.
+- **Synthetic mouse clicks are the one thing that does NOT work.** `xdotool` clicks
+  land on Firefox (it's Xwayland) but GNOME's **RemoteDesktop portal re-prompts for
+  consent on every pointer button event** and resets the toggle each time, so you can't
+  reliably click page controls (e.g. Discover's per-row "expand document" caret). Drive
+  everything you can by keyboard and URL; for detail that would need a click, pull the
+  data another way (e.g. the raw alert JSON from
+  `/var/ossec/logs/alerts/alerts.json`).
+- **`sources.list` after a cdrom install is empty** (only the commented `deb cdrom`
+  line), so `apt-get install` reports "Unable to locate package". Add the Kali repo:
+  `echo "deb http://http.kali.org/kali kali-rolling main contrib non-free non-free-firmware" | sudo tee -a /etc/apt/sources.list && sudo apt-get update`.
+  (Same class of issue as the WAZUH01 cdrom-source gotcha above.)
+
+---
+
 ## Quick host-readiness checklist
 
 ```powershell

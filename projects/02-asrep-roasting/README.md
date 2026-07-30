@@ -102,15 +102,15 @@ Reset the lab afterward by restoring DC01's clean snapshot.
 | 3 | [`evidence/03-john-cracks-password.png`](evidence/03-john-cracks-password.png) | John cracking the AS-REP → **`b.otieno : Password1`** |
 | 4 | [`evidence/04-full-chain.png`](evidence/04-full-chain.png) | The whole chain in one full-screen terminal: reach → roast → crack → `--show` |
 
-**Blue phase** — screenshots from the Wazuh dashboard:
+**Blue phase** — screenshot from the Wazuh dashboard at `https://10.10.10.50`:
 
 | # | Shot | What it shows |
 |---|------|---------------|
-| 5 | [`evidence/05-wazuh-asrep-alert.png`](evidence/05-wazuh-asrep-alert.png) | Discover filtered to `rule.id:100011` — the alert firing on 4768 / preAuthType 0 |
-| 6 | [`evidence/06-wazuh-alert-detail.png`](evidence/06-wazuh-alert-detail.png) | The alert's expanded document — full `data.win.*` field table for the AS-REQ |
+| 5 | [`evidence/05-wazuh-asrep-alert.png`](evidence/05-wazuh-asrep-alert.png) | Discover filtered to `rule.id:100011` — **2 hits** from DC01 showing 4768 / preAuthType 0 / RC4 (0x17) / `b.otieno` / krbtgt, source `10.10.10.40`, with the `data.win.*` fields legible inline |
 
-Raw command output:
+Raw command output & alert data:
 - [`evidence/getnpusers_output.txt`](evidence/getnpusers_output.txt) — AS-REP hash pulled with no password
 - [`evidence/john_output.txt`](evidence/john_output.txt) — offline crack recovering `Password1`
+- [`evidence/wazuh_alert_100011.json`](evidence/wazuh_alert_100011.json) — the full Wazuh alert document (every `data.win.*` field for the 4768 / preAuthType 0 event)
 
 See [`RUN-LOG.md`](RUN-LOG.md) for the exact execution record.
