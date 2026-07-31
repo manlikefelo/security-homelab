@@ -114,13 +114,13 @@ The full alert document is saved at
 loop on misconfig #3: the **same finding** is both exploited (red) and detected (blue).
 
 > **Screenshot note:** the dashboard was driven from Firefox inside the KALI01 GNOME
-> (Wayland) session. GNOME's Wayland RemoteDesktop portal re-prompts for consent on
-> every synthetic pointer click, so the data-explorer "select a datasource" picker
-> (which requires a click and isn't bindable via the URL/default-index API) could not
-> be automated. The `rule.id:100012` query is captured loaded against the live SIEM
-> (04), and the complete field-level detail is the raw alert JSON — which is more
-> complete than the rendered row anyway. Login, cert-accept and the query were all
-> driven by keyboard.
+> (Wayland) session, entirely by keyboard (GNOME's Wayland RemoteDesktop portal blocks
+> synthetic *mouse* clicks). The trick that makes Discover render the rows without a
+> click: set `wazuh-alerts-*` as the **default index pattern** server-side
+> (`POST /api/opensearch-dashboards/settings/defaultIndex`), then open the **classic**
+> `/app/discover#/?_a=(...index:'wazuh-alerts'...)` route — the classic app binds the
+> default index, so the datasource shows `wazuh-alerts-*` and the hits render (04).
+> The raw alert JSON is kept too as the full field-level detail.
 
 ## Remediation (verified understanding)
 - **Strip replication rights** from anything that isn't a DC or a sanctioned sync
@@ -143,7 +143,7 @@ loop on misconfig #3: the **same finding** is both exploited (red) and detected 
 
 | # | Shot / file | What it shows |
 |---|-------------|---------------|
-| 4 | [`evidence/04-wazuh-dcsync-query.png`](evidence/04-wazuh-dcsync-query.png) | Discover on the live SIEM filtered to `rule.id:100012` |
+| 4 | [`evidence/04-wazuh-dcsync-alert.png`](evidence/04-wazuh-dcsync-alert.png) | Wazuh Discover filtered to `rule.id:100012` — **3 hits** rendered, `_source` rows showing 4662 / replication GUID / subject `b.otieno` / agent DC01 |
 | — | [`evidence/wazuh_alert_100012.json`](evidence/wazuh_alert_100012.json) | Full alert: 4662 / replication GUID `1131f6ad…` / subject `b.otieno` / T1003.006 |
 
 Raw command output:

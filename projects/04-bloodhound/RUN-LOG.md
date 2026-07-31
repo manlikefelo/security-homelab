@@ -99,7 +99,9 @@ rule **100013** matched. Filtering `rule.id:100013` returns the hits (fired 2×)
 | triggering eventID | **4662** (directory object access), amid the correlated burst |
 
 Full alert: [`evidence/wazuh_alert_100013.json`](evidence/wazuh_alert_100013.json).
-Dashboard query view: [`evidence/03-wazuh-enumeration-query.png`](evidence/03-wazuh-enumeration-query.png).
+Dashboard: [`evidence/03-wazuh-enumeration-alert.png`](evidence/03-wazuh-enumeration-alert.png)
+— Wazuh Discover filtered to `rule.id:100013`, **2 hits** rendered from DC01, the
+`_source` rows showing the correlated 4662 read burst (subject `b.otieno`).
 
 > **Honest nuance (worth an interview):** this is the noisiest detection in the lab.
 > A single Kerberoast (4769/RC4) or DCSync (4662/replication-GUID) is a sharp,
@@ -109,10 +111,10 @@ Dashboard query view: [`evidence/03-wazuh-enumeration-query.png`](evidence/03-wa
 > fundamentally harder than detecting a specific dangerous operation — and saying so
 > is part of understanding it.
 >
-> **Screenshot note:** same Wayland limitation documented in Project 03 — the
-> data-explorer "select a datasource" picker needs a click GNOME's RemoteDesktop
-> portal blocks, so the dashboard shot shows the `rule.id:100013` query loaded against
-> the live SIEM and the authoritative detail is the alert JSON.
+> **Screenshot note:** the rendered dashboard (03) was captured the same way as
+> Project 03 — set `wazuh-alerts-*` as the default index pattern server-side, then open
+> the classic `/app/discover` route, which binds it and renders the hits. Driven
+> entirely by keyboard (GNOME's Wayland portal blocks synthetic mouse clicks).
 
 ## Remediation (verified understanding)
 - **Cut the paths:** remove `b.otieno` from Domain Admins and strip its replication

@@ -73,8 +73,8 @@ Custom rule `100012` in
 
 | # | Shot / file | What it shows |
 |---|-------------|---------------|
-| 4 | [`evidence/04-wazuh-dcsync-query.png`](evidence/04-wazuh-dcsync-query.png) | Discover filtered to `rule.id:100012` on the live SIEM |
-| — | [`evidence/wazuh_alert_100012.json`](evidence/wazuh_alert_100012.json) | Full alert: 4662 / replication GUID / subject `b.otieno` |
+| 4 | [`evidence/04-wazuh-dcsync-alert.png`](evidence/04-wazuh-dcsync-alert.png) | Wazuh Discover (`wazuh-alerts-*`) filtered to `rule.id:100012` — **3 hits** from DC01, `_source` rows showing 4662 / replication GUID `1131f6aa…` / subject `b.otieno` |
+| — | [`evidence/wazuh_alert_100012.json`](evidence/wazuh_alert_100012.json) | Full alert JSON: 4662 / replication GUID / subject `b.otieno` |
 
 Raw output: [`evidence/secretsdump_output.txt`](evidence/secretsdump_output.txt).
 See [`RUN-LOG.md`](RUN-LOG.md) for the exact PTES-structured execution record.

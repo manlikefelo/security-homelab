@@ -331,6 +331,33 @@ Never try to bring the whole stack up while another VM is already competing for 
 
 ---
 
+## Wazuh Discover shows "Select a datasource" / won't render alert rows
+
+**Symptom.** Navigating Discover by URL (the newer `/app/data-explorer/discover` route)
+shows **"Select a datasource"** and spins on *Searching* forever — the `rule.id:…`
+query is in the search bar but no hits render, even though the alerts exist in the
+index (`curl .../wazuh-alerts-*/_count?q=rule.id:100012` returns a count). The
+data-explorer app needs a **mouse click** on the datasource picker, which GNOME's
+Wayland RemoteDesktop portal blocks when driving Kali headlessly.
+
+**Fix.** Set the index pattern as **default** server-side, then use the **classic**
+Discover route which binds it (no click needed):
+```bash
+# 1) set wazuh-alerts-* as the default index pattern (id is 'wazuh-alerts')
+docker exec wazuh2-wazuh.dashboard-1 curl -s -k -u admin:SecretPassword \
+  -X POST "https://localhost:5601/api/opensearch-dashboards/settings/defaultIndex" \
+  -H "osd-xsrf: true" -H "Content-Type: application/json" -d '{"value":"wazuh-alerts"}'
+```
+Then open the **classic** app URL (note `/app/discover`, not `/app/data-explorer/…`):
+```
+https://10.10.10.50/app/discover#/?_g=(time:(from:now-7d,to:now))&_a=(columns:!(_source),index:'wazuh-alerts',interval:auto,query:(language:kuery,query:'rule.id:100012'),sort:!())
+```
+Discover then shows `wazuh-alerts-*` selected, the histogram, and the `_source` rows —
+the rendered screenshot, no clicks required. This is how the Project 01, 03 and 04
+dashboard alert shots were captured.
+
+---
+
 ## Quick host-readiness checklist
 
 ```powershell

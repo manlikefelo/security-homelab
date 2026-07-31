@@ -71,8 +71,8 @@ the sharp signatures in 01–03 — that nuance is worth calling out in an inter
 
 | # | Shot / file | What it shows |
 |---|-------------|---------------|
-| 3 | [`evidence/03-wazuh-enumeration-query.png`](evidence/03-wazuh-enumeration-query.png) | Discover filtered to `rule.id:100013` on the live SIEM |
-| — | [`evidence/wazuh_alert_100013.json`](evidence/wazuh_alert_100013.json) | Full alert: rule 100013 / T1087.002 / frequency 15 / 4662 burst |
+| 3 | [`evidence/03-wazuh-enumeration-alert.png`](evidence/03-wazuh-enumeration-alert.png) | Wazuh Discover (`wazuh-alerts-*`) filtered to `rule.id:100013` — **2 hits** from DC01, `_source` rows showing the 4662 read burst (subject `b.otieno`) |
+| — | [`evidence/wazuh_alert_100013.json`](evidence/wazuh_alert_100013.json) | Full alert JSON: rule 100013 / T1087.002 / frequency 15 / 4662 burst |
 
 Raw output: [`evidence/bloodhound_collection_output.txt`](evidence/bloodhound_collection_output.txt).
 See [`RUN-LOG.md`](RUN-LOG.md) for the exact PTES-structured execution record.
