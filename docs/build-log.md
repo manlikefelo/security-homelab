@@ -258,6 +258,24 @@ vulnerable Linux services as **Docker containers** rather than extra VMs, to sav
 
 ---
 
+## 2026-07-31 — UB01 re-verified after the repo split; agent needs re-enroll
+
+Powered UB01 back up from the `configured-victim` snapshot to confirm it's ready for the
+web-pentest project. Verified live over SSH (`127.0.0.1:2223`, `felix`):
+- **Host-only IP** `10.10.10.30/24` on `enp0s8` — up.
+- **Docker victims all serving:** `juice-shop` (:3000 → HTTP 200), `dvwa`
+  (:8080 → 302 to login), `ssh-victim` (:2222) — all `Up`.
+
+**Gotcha found:** the Wazuh agent is **not present on this snapshot** (no `/var/ossec`,
+no `wazuh-agent` unit). The agent I enrolled on 2026-07-30 (id 004, Active) was installed
+*after* the `configured-victim` snapshot was taken, so restoring that snapshot rolls the
+box back to before the agent existed. Not a data-loss issue — the victims are intact — but
+UB01's telemetry won't reach Wazuh until the agent is reinstalled. I'll re-enroll it at the
+start of the web-pentest project (that's the phase that actually needs UB01's logs in the
+SIEM anyway), then re-snapshot so it sticks.
+
+---
+
 ## ⬜ Remaining
 - [x] KALI01 — installed, DNS → DC, Project 01 (Kerberoasting) proven. ✅
 - [x] WAZUH01 — Ubuntu + Wazuh single-node SIEM up & verified (4.9.0, indexer green). ✅
