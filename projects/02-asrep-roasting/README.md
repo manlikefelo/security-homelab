@@ -114,3 +114,21 @@ Raw command output & alert data:
 - [`evidence/wazuh_alert_100011.json`](evidence/wazuh_alert_100011.json) — the full Wazuh alert document (every `data.win.*` field for the 4768 / preAuthType 0 event)
 
 See [`RUN-LOG.md`](RUN-LOG.md) for the exact execution record.
+
+## 7. ATT&CK coverage matrix
+
+How this project's attack maps onto MITRE ATT&CK, and which step my detection covers.
+✅ = I have a Wazuh detection that fires on this step; ⬜ = performed in the attack but
+not the point where I detect.
+
+| Tactic | Technique (ID) | Attacker action in this lab | Telemetry | Detection | Wazuh rule |
+|--------|----------------|------------------------------|-----------|-----------|------------|
+| Credential Access | **AS-REP Roasting (T1558.004)** | `GetNPUsers -no-pass` pulls `b.otieno`'s AS-REP with **no credentials** (pre-auth disabled) | DC01 Event **4768**, `preAuthType 0` (+ `ticketEncryptionType 0x17` RC4) | ✅ | **100011** (level 10) |
+| Credential Access | Brute Force: Password Cracking (T1110.002) | Offline crack of the AS-REP hash (John/hashcat) → `b.otieno : Password1` | none — offline, off-host | ⬜ (offline, no telemetry by design) | — |
+
+> **Impact note for a reviewer:** `b.otieno` is a **Domain Admin** with replication
+> rights, so this single technique takes an *unauthenticated* attacker straight to
+> Domain-Admin credentials — the pivot the DCSync project (T1003.006) then abuses.
+
+**One-line summary:** detects AS-REP Roasting at the AS-REQ step (4768 / preAuthType 0)
+via rule **100011** → MITRE **T1558.004** (Credential Access).

@@ -71,3 +71,17 @@ Reset the lab afterward by restoring DC01's `pre-attack-clean` snapshot.
 - 📸 `GetUserSPNs` output showing the `svc_sql` hash
 - 📸 hashcat cracking the password
 - 📸 the Wazuh alert (rule 100010) for the RC4 TGS burst
+
+## 7. ATT&CK coverage matrix
+
+How this project's attack maps onto MITRE ATT&CK, and which step my detection covers.
+✅ = I have a Wazuh detection that fires on this step; ⬜ = performed in the attack but
+not the point where I detect.
+
+| Tactic | Technique (ID) | Attacker action in this lab | Telemetry | Detection | Wazuh rule |
+|--------|----------------|------------------------------|-----------|-----------|------------|
+| Credential Access | **Kerberoasting (T1558.003)** | `GetUserSPNs` requests an RC4 TGS for `svc_sql` and dumps the hash | DC01 Event **4769**, `ticketEncryptionType 0x17` (RC4) | ✅ | **100010** (level 10) |
+| Credential Access | Brute Force: Password Cracking (T1110.002) | Offline crack of the TGS-REP hash (John/hashcat) → `svc_sql : P@ssw0rd` | none — offline, off-host | ⬜ (offline, no telemetry by design) | — |
+
+**One-line summary:** detects Kerberoasting at the ticket-request step (4769 / RC4)
+via rule **100010** → MITRE **T1558.003** (Credential Access).

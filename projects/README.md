@@ -16,12 +16,24 @@ compare them quickly:
 > loop from *offensive action* to *defensive detection* on the same finding. That
 > attacker-and-defender symmetry is the skill I'm demonstrating.
 
-| # | Project | Attack | MITRE ATT&CK | Detects with |
-|---|---------|--------|--------------|--------------|
-| 01 | [Kerberoasting](01-kerberoasting/) | Crack an SPN service account offline | T1558.003 | 4769 RC4 TGS spike |
-| 02 | [AS-REP Roasting](02-asrep-roasting/) | Crack a no-preauth user offline | T1558.004 | 4768 preauth-type 0 |
-| 03 | [DCSync](03-dcsync/) | Pull hashes via replication rights | T1003.006 | 4662 replication GUIDs |
-| 04 | [BloodHound](04-bloodhound/) | Map priv-esc paths in the domain | T1069 / T1087 | 4661/4662 mass LDAP reads |
+## ATT&CK detection coverage matrix
+
+At-a-glance breadth: which ATT&CK techniques the lab attacks and detects, and the
+end-to-end status of each. **Status:** ✅ = attack run **and** detection verified
+firing end-to-end · 🟡 = detection rule written, attack not yet run · ⬜ = planned.
+
+| # | Project | Tactic | Technique (ID) | Detection signal | Wazuh rule | Status |
+|---|---------|--------|----------------|------------------|------------|--------|
+| 01 | [Kerberoasting](01-kerberoasting/) | Credential Access | **T1558.003** — Kerberoasting | Event **4769**, `ticketEncryptionType 0x17` (RC4) | 100010 (lvl 10) | ✅ verified |
+| 02 | [AS-REP Roasting](02-asrep-roasting/) | Credential Access | **T1558.004** — AS-REP Roasting | Event **4768**, `preAuthType 0` | 100011 (lvl 10) | ✅ verified |
+| 03 | [DCSync](03-dcsync/) | Credential Access | **T1003.006** — DCSync | Event **4662**, replication extended-right GUIDs | 100012 (lvl 12) | 🟡 rule staged |
+| 04 | [BloodHound](04-bloodhound/) | Discovery | **T1087.002** — Domain Account Discovery | **4661/4662** read burst (freq ≥15 / 60s) | 100013 (lvl 8) | 🟡 rule staged |
+
+**Completed today (✅):** 2 of 4 techniques attacked and detected end-to-end, both in
+the **Credential Access** tactic (Kerberos abuse: T1558.003 + T1558.004). Each closes
+the loop on a distinct AD misconfiguration — a Kerberoastable service account and a
+pre-auth-disabled Domain Admin. The per-project READMEs (§7) carry the detailed
+technique-by-technique matrix and the offline-cracking (T1110.002) sub-steps.
 
 ## Running order
 Do them in numeric order. 01–02 need only KALI01 + DC01 (red phase). Detection steps
