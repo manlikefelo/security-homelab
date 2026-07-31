@@ -275,6 +275,62 @@ Useful when capturing dashboard screenshots without a mouse on the host:
 
 ---
 
+## DCSync / enumeration produce NO Wazuh alert — Event 4662 not being logged
+
+**Symptom.** The DCSync (Project 03) and BloodHound-enumeration (Project 04) blue phases
+fire nothing — `grep 4662 alerts.json` returns 0 — even though the attack clearly ran
+and the DC01 agent is Active.
+
+**Cause.** Windows does **not** audit directory object access (Event 4662) by default.
+Two things must both be on, on DC01:
+1. The *Directory Service Access* audit subcategory (Success).
+2. A **SACL on the domain-root object** that audits the replication extended rights.
+
+**Fix.**
+```powershell
+auditpol /set /subcategory:"Directory Service Access" /success:enable /failure:enable
+```
+Then add the SACL. The AD-module path (`Get-Acl "AD:$rootDN" -Audit` → `AddAuditRule` →
+`Set-Acl`) works, but it threw `Get-ADDomain : A local error has occurred` when the DC
+was memory-starved. The reliable path is raw **ADSI**:
+```powershell
+$rootDN = ([ADSI]"LDAP://RootDSE").defaultNamingContext
+$de = [ADSI]"LDAP://$rootDN"
+$de.psbase.Options.SecurityMasks = [System.DirectoryServices.SecurityMasks]::Sacl
+$sd  = $de.psbase.ObjectSecurity
+$everyone = New-Object System.Security.Principal.SecurityIdentifier(
+    [System.Security.Principal.WellKnownSidType]::WorldSid, $null)
+foreach ($guid in '1131f6aa-9c07-11d1-f79f-00c04fc2dcd2','1131f6ad-9c07-11d1-f79f-00c04fc2dcd2') {
+    $sd.AddAuditRule((New-Object System.DirectoryServices.ActiveDirectoryAuditRule(
+        $everyone,'ExtendedRight','Success',[Guid]$guid)))
+}
+$de.psbase.ObjectSecurity = $sd; $de.psbase.CommitChanges()
+```
+After this, re-run the DCSync/collection and the 4662s flow → rules 100012 / 100013 fire.
+
+---
+
+## WAZUH01 sshd never sends its banner during 3-VM phases (indexer thrash)
+
+**Symptom.** During a live DC01 + KALI01 + WAZUH01 phase, WAZUH01's SSH (127.0.0.1:2222)
+accepts TCP but times out "during banner exchange" — even after powering Kali off, and
+even after a hard reset. The console framebuffer is frozen (cosmetic) so it looks hung.
+
+**Cause.** At 6 GB the single-node Wazuh indexer's JVM plus the manager/dashboard
+containers thrash into swap under the 3-VM memory ceiling, and never recover on their
+own — sshd can't get enough CPU/RAM to complete the handshake.
+
+**Fix.**
+1. Give WAZUH01 more RAM: `VBoxManage modifyvm WAZUH01 --memory 8192` (VM off first).
+   8 GB + DC01 squeezed to 2 GB = 10 GB, comfortably under the 12 GB ceiling.
+2. Boot WAZUH01 **alone** (DC01 off too) so the indexer initialises with no contention;
+   wait ~4 min, confirm SSH answers and the manager daemons (`wdb`/`remoted`/
+   `analysisd`) are up, **then** boot DC01 so its agent reconnects and flushes events.
+
+Never try to bring the whole stack up while another VM is already competing for RAM.
+
+---
+
 ## Quick host-readiness checklist
 
 ```powershell
