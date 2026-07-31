@@ -60,6 +60,41 @@ Custom rule `100012` in
 - If `krbtgt` was exposed, **rotate the krbtgt password twice**.
 
 ## 6. Evidence
-- 📸 `secretsdump` dumping domain hashes (redact real-looking values)
-- 📸 the `krbtgt` hash line
-- 📸 Wazuh alert (rule 100012) for the replication 4662
+
+**Red phase** — full-screen KALI01 GUI terminal:
+
+| # | Shot | What it shows |
+|---|------|---------------|
+| 1 | [`evidence/01-kali-reaches-dc.png`](evidence/01-kali-reaches-dc.png) | Kali reaching DC01 (ping) |
+| 2 | [`evidence/02-dcsync-full-domain-dump.png`](evidence/02-dcsync-full-domain-dump.png) | `secretsdump` replicating every domain hash incl. Administrator & krbtgt |
+| 3 | [`evidence/03-dcsync-krbtgt-golden-key.png`](evidence/03-dcsync-krbtgt-golden-key.png) | Targeted krbtgt pull — the Golden Ticket key |
+
+**Blue phase** — Wazuh:
+
+| # | Shot / file | What it shows |
+|---|-------------|---------------|
+| 4 | [`evidence/04-wazuh-dcsync-query.png`](evidence/04-wazuh-dcsync-query.png) | Discover filtered to `rule.id:100012` on the live SIEM |
+| — | [`evidence/wazuh_alert_100012.json`](evidence/wazuh_alert_100012.json) | Full alert: 4662 / replication GUID / subject `b.otieno` |
+
+Raw output: [`evidence/secretsdump_output.txt`](evidence/secretsdump_output.txt).
+See [`RUN-LOG.md`](RUN-LOG.md) for the exact PTES-structured execution record.
+
+## 7. ATT&CK coverage matrix
+
+Structured on **PTES** phases; every action carries its **MITRE ATT&CK** ID.
+✅ = I have a Wazuh detection that fires on this step; ⬜ = performed/enabled but not
+the point where I detect.
+
+| PTES phase | Tactic | Technique (ID) | Action in this lab | Telemetry | Detection | Wazuh rule |
+|------------|--------|----------------|--------------------|-----------|-----------|------------|
+| Intelligence Gathering | Discovery | Remote System Discovery (T1018) | Ping/DNS-confirm the DC before replicating | — (ICMP) | ⬜ | — |
+| Exploitation | Credential Access | **DCSync (T1003.006)** | `secretsdump` replicates NTDS via DRSUAPI as `b.otieno` | DC01 Event **4662**, replication GUID `1131f6ad…`, subject b.otieno | ✅ | **100012** (level 12) |
+| Post-Exploitation | Credential Access / Persistence | Golden Ticket (T1558.001) | krbtgt hash recovered → enables forging a Golden Ticket | none at this step (forging is offline) | ⬜ (enabled, not performed) | — |
+
+> **Impact note for a reviewer:** the input credential came from Project 02
+> (T1558.004), and `b.otieno` is a Domain Admin, so the chain reads
+> **T1558.004 → T1003.006 → T1558.001**: anonymous AS-REP roast → DCSync → krbtgt →
+> Golden Ticket. One misconfigured account collapses the whole domain.
+
+**One-line summary:** detects DCSync at the replication step (4662 / GetChanges-All GUID)
+via rule **100012** → MITRE **T1003.006** (Credential Access).

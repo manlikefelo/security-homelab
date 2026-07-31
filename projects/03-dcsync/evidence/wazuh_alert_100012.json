@@ -1,0 +1,76 @@
+{
+    "timestamp": "2026-07-31T02:00:34.611+0000",
+    "rule": {
+        "level": 12,
+        "description": "DCSync: directory replication rights exercised (possible domain hash dump) [T1003.006]",
+        "id": "100012",
+        "mitre": {
+            "id": [
+                "T1003.006"
+            ],
+            "tactic": [
+                "Credential Access"
+            ],
+            "technique": [
+                "DCSync"
+            ]
+        },
+        "firedtimes": 2,
+        "mail": true,
+        "groups": [
+            "lab",
+            "ad_attacks",
+            "windows",
+            "dcsync"
+        ]
+    },
+    "agent": {
+        "id": "001",
+        "name": "DC01",
+        "ip": "10.10.10.10"
+    },
+    "manager": {
+        "name": "wazuh.manager"
+    },
+    "id": "1785463234.370147",
+    "decoder": {
+        "name": "windows_eventchannel"
+    },
+    "data": {
+        "win": {
+            "system": {
+                "providerName": "Microsoft-Windows-Security-Auditing",
+                "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+                "eventID": "4662",
+                "version": "0",
+                "level": "0",
+                "task": "14080",
+                "opcode": "0",
+                "keywords": "0x8020000000000000",
+                "systemTime": "2026-07-31T02:03:15.8963345Z",
+                "eventRecordID": "8240",
+                "processID": "676",
+                "threadID": "788",
+                "channel": "Security",
+                "computer": "DC01.lab.local",
+                "severityValue": "AUDIT_SUCCESS",
+                "message": "\"An operation was performed on an object.\r\n\r\nSubject :\r\n\tSecurity ID:\t\tS-1-5-21-2426426816-2046039123-2541842248-1112\r\n\tAccount Name:\t\tb.otieno\r\n\tAccount Domain:\t\tLAB\r\n\tLogon ID:\t\t0xB63E2\r\n\r\nObject:\r\n\tObject Server:\t\tDS\r\n\tObject Type:\t\t%{19195a5b-6da0-11d0-afd3-00c04fd930c9}\r\n\tObject Name:\t\t%{4dd0d40f-c080-4809-b64d-dbc5d5dc8116}\r\n\tHandle ID:\t\t0x0\r\n\r\nOperation:\r\n\tOperation Type:\t\tObject Access\r\n\tAccesses:\t\tControl Access\r\n\t\t\t\t\r\n\tAccess Mask:\t\t0x100\r\n\tProperties:\t\tControl Access\r\n\t\t{1131f6ad-9c07-11d1-f79f-00c04fc2dcd2}\r\n\t{19195a5b-6da0-11d0-afd3-00c04fd930c9}\r\n\r\n\r\nAdditional Information:\r\n\tParameter 1:\t\t-\r\n\tParameter 2:\t\t\""
+            },
+            "eventdata": {
+                "subjectUserSid": "S-1-5-21-2426426816-2046039123-2541842248-1112",
+                "subjectUserName": "b.otieno",
+                "subjectDomainName": "LAB",
+                "subjectLogonId": "0xb63e2",
+                "objectServer": "DS",
+                "objectType": "%{19195a5b-6da0-11d0-afd3-00c04fd930c9}",
+                "objectName": "%{4dd0d40f-c080-4809-b64d-dbc5d5dc8116}",
+                "operationType": "Object Access",
+                "handleId": "0x0",
+                "accessList": "%%7688",
+                "accessMask": "0x100",
+                "properties": "%%7688    {1131f6ad-9c07-11d1-f79f-00c04fc2dcd2}   {19195a5b-6da0-11d0-afd3-00c04fd930c9}"
+            }
+        }
+    },
+    "location": "EventChannel"
+}

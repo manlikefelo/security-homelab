@@ -26,14 +26,16 @@ firing end-to-end · 🟡 = detection rule written, attack not yet run · ⬜ = 
 |---|---------|--------|----------------|------------------|------------|--------|
 | 01 | [Kerberoasting](01-kerberoasting/) | Credential Access | **T1558.003** — Kerberoasting | Event **4769**, `ticketEncryptionType 0x17` (RC4) | 100010 (lvl 10) | ✅ verified |
 | 02 | [AS-REP Roasting](02-asrep-roasting/) | Credential Access | **T1558.004** — AS-REP Roasting | Event **4768**, `preAuthType 0` | 100011 (lvl 10) | ✅ verified |
-| 03 | [DCSync](03-dcsync/) | Credential Access | **T1003.006** — DCSync | Event **4662**, replication extended-right GUIDs | 100012 (lvl 12) | 🟡 rule staged |
+| 03 | [DCSync](03-dcsync/) | Credential Access | **T1003.006** — DCSync | Event **4662**, replication extended-right GUIDs | 100012 (lvl 12) | ✅ verified |
 | 04 | [BloodHound](04-bloodhound/) | Discovery | **T1087.002** — Domain Account Discovery | **4661/4662** read burst (freq ≥15 / 60s) | 100013 (lvl 8) | 🟡 rule staged |
 
-**Completed today (✅):** 2 of 4 techniques attacked and detected end-to-end, both in
-the **Credential Access** tactic (Kerberos abuse: T1558.003 + T1558.004). Each closes
-the loop on a distinct AD misconfiguration — a Kerberoastable service account and a
-pre-auth-disabled Domain Admin. The per-project READMEs (§7) carry the detailed
-technique-by-technique matrix and the offline-cracking (T1110.002) sub-steps.
+**Completed (✅):** 3 of 4 techniques attacked and detected end-to-end. The three form
+a single kill chain on one over-permissioned account (`b.otieno`):
+**T1558.004** (anonymous AS-REP roast → its password) → **T1003.006** (DCSync with its
+replication rights → every hash incl. krbtgt) → which enables **T1558.001** (Golden
+Ticket). Plus **T1558.003** (Kerberoasting) on a separate service account. Each closes
+the loop from offensive action to Wazuh detection. The per-project READMEs (§7) carry
+the detailed technique-by-technique matrix and the offline-cracking (T1110.002) sub-steps.
 
 ## Running order
 Do them in numeric order. 01–02 need only KALI01 + DC01 (red phase). Detection steps
