@@ -58,6 +58,44 @@ the sharp signatures in 01–03 — that nuance is worth calling out in an inter
 - Periodically run BloodHound **defensively** and treat new DA paths as incidents.
 
 ## 6. Evidence
-- 📸 BloodHound "Shortest Path to Domain Admins" showing `b.otieno`
-- 📸 the DCSync-rights and Kerberoastable queries
-- 📸 Wazuh alert (rule 100013) for the enumeration burst
+
+**Red phase** — full-screen KALI01 GUI terminal:
+
+| # | Shot | What it shows |
+|---|------|---------------|
+| 1 | [`evidence/01-bloodhound-collection.png`](evidence/01-bloodhound-collection.png) | `bloodhound-python -c All` enumerating the domain as low-priv `a.mokaya` |
+| 2 | [`evidence/02-collection-zip-contents.png`](evidence/02-collection-zip-contents.png) | The `_bloodhound.zip` — 7 JSON files ready to graph |
+| 4 | [`evidence/04-attack-paths-from-graph.png`](evidence/04-attack-paths-from-graph.png) | Attack paths from the graph: b.otieno in Domain Admins + DCSync rights, svc_sql Kerberoastable, b.otieno AS-REP roastable |
+
+**Blue phase** — Wazuh:
+
+| # | Shot / file | What it shows |
+|---|-------------|---------------|
+| 3 | [`evidence/03-wazuh-enumeration-query.png`](evidence/03-wazuh-enumeration-query.png) | Discover filtered to `rule.id:100013` on the live SIEM |
+| — | [`evidence/wazuh_alert_100013.json`](evidence/wazuh_alert_100013.json) | Full alert: rule 100013 / T1087.002 / frequency 15 / 4662 burst |
+
+Raw output: [`evidence/bloodhound_collection_output.txt`](evidence/bloodhound_collection_output.txt).
+See [`RUN-LOG.md`](RUN-LOG.md) for the exact PTES-structured execution record.
+
+## 7. ATT&CK coverage matrix
+
+Structured on **PTES** phases; every action carries its **MITRE ATT&CK** ID.
+✅ = detected by a Wazuh rule; ⬜ = performed but not the detection point.
+
+| PTES phase | Tactic | Technique (ID) | Action in this lab | Telemetry | Detection | Wazuh rule |
+|------------|--------|----------------|--------------------|-----------|-----------|------------|
+| Intelligence Gathering | Discovery | **Account Discovery: Domain (T1087.002)** | `bloodhound-python -c All` enumerates all users | DC01 **4661/4662** read burst | ✅ | **100013** (level 8, freq 15/60s) |
+| Intelligence Gathering | Discovery | Permission Groups Discovery: Domain (T1069.002) | Same run enumerates all groups/memberships | part of the same burst | ✅ (same rule) | 100013 |
+| Intelligence Gathering | Discovery | Domain Trust Discovery (T1482) | Same run enumerates trusts/topology | part of the same burst | ⬜ (covered by the burst rule, not keyed on trusts) | — |
+| Analysis | — | (graph reading — offline) | Read shortest paths to DA, DCSync holders, roastable users | none (offline) | ⬜ | — |
+
+> **Note for a reviewer:** this is the **noisiest** detection in the lab by design.
+> Enumeration is a *rate* signal, so rule 100013 uses frequency+timeframe, which trades
+> precision for coverage — the opposite trade-off from the sharp single-event
+> signatures in 01–03 (4769/RC4, 4768/preAuth-0, 4662/replication-GUID). Detecting
+> "breadth of reads" is inherently harder than detecting one dangerous operation, and
+> the rule needs tuning/whitelisting in production.
+
+**One-line summary:** detects the BloodHound/SharpHound collection as a directory-read
+burst via rule **100013** → MITRE **T1087.002** (Discovery). The graph itself unifies
+Projects 01–03: every finding is an edge to Domain Admin, all through `b.otieno`.
