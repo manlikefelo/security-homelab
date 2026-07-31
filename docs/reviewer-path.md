@@ -28,11 +28,12 @@ through this repo and what each stop proves about how I work.
 4. **[verification.md](verification.md)** — the checklist ending in a live
    Kerberoast → Wazuh alert. The screenshot placeholders are the evidence.
    → *Proves:* the attack → log → detect pipeline actually closes.
-5. **[../projects/01-kerberoasting/RUN-LOG.md](../projects/01-kerberoasting/RUN-LOG.md)**
+5. **[ad-attack-chain → Phase 01 RUN-LOG](../../ad-attack-chain/engagement/01-kerberoasting/RUN-LOG.md)**
    — the one to open if you want *proof, not prose*: the actual command output and
    dashboard screenshots of the attack running and the matching Wazuh alert firing.
-   The [projects index](../projects/) lists the same red→blue treatment for AS-REP
-   roasting, DCSync and BloodHound, each with its own custom detection rule.
+   The [ad-attack-chain](../../ad-attack-chain) repo gives the same red→blue treatment
+   to AS-REP roasting, DCSync and BloodHound, each with its own custom detection rule
+   over in [detection-engineering](../../detection-engineering).
    → *Proves:* I can execute an attack and detect it — and document it honestly.
 6. **[../README.md](../README.md#showcase)** — the *Showcase* and *Skills demonstrated*
    sections tie it together.

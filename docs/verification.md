@@ -82,7 +82,7 @@ screenshot where the placeholders are — those are the artifacts a reviewer ski
 - [x] Wazuh **rule 100010** fired: Kerberos TGS (Event 4769, RC4 0x17) alert for `svc_sql`,
       agent DC01, source `10.10.10.40` — the detection of misconfig #1.
 
-📸 _evidence: [`../projects/01-kerberoasting/evidence/05-wazuh-kerberoast-alert.png`](../projects/01-kerberoasting/evidence/05-wazuh-kerberoast-alert.png) + [`06-wazuh-alert-detail.png`](../projects/01-kerberoasting/evidence/06-wazuh-alert-detail.png)_
+📸 _evidence: [`../../ad-attack-chain/engagement/01-kerberoasting/evidence/05-wazuh-kerberoast-alert.png`](../../ad-attack-chain/engagement/01-kerberoasting/evidence/05-wazuh-kerberoast-alert.png) + [`06-wazuh-alert-detail.png`](../../ad-attack-chain/engagement/01-kerberoasting/evidence/06-wazuh-alert-detail.png)_
 
 ---
 

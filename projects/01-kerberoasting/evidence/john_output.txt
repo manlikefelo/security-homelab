@@ -1,9 +1,0 @@
-Created directory: /home/felix/.john
-Using default input encoding: UTF-8
-Loaded 1 password hash (krb5tgs, Kerberos 5 TGS etype 23 [MD4 HMAC-MD5 RC4])
-Will run 2 OpenMP threads
-Press Ctrl-C to abort, or send SIGUSR1 to john process for status
-P@ssw0rd         (?)     
-1g 0:00:00:00 DONE (2026-07-24 16:57) 6.250g/s 51200p/s 51200c/s 51200C/s somebody..whitetiger
-Use the "--show" option to display all of the cracked passwords reliably
-Session completed. 

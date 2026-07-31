@@ -50,7 +50,13 @@ Full diagram, IP scheme, and per-VM RAM/CPU budget: **[docs/architecture.md](doc
 | [`scripts/sysmon/`](scripts/sysmon/) | Sysmon install using the SwiftOnSecurity config |
 | [`wazuh/`](wazuh/) | Single-node Wazuh docker-compose (secrets via gitignored `.env`) + [custom detection rules](wazuh/custom-rules/local_rules.xml) |
 | [`victims/`](victims/) | Vulnerable Linux services as Docker containers |
-| [`projects/`](projects/) | Red→Blue attack/detect walkthroughs (Kerberoasting, AS-REP, DCSync, BloodHound) |
+
+> **The red/blue projects live in their own repos** now (this repo is the shared
+> *foundation* they all run on): the attacks are in
+> [**ad-attack-chain**](../ad-attack-chain), the detections in
+> [**detection-engineering**](../detection-engineering), the web pentest in
+> [**webapp-pentest-juiceshop**](../webapp-pentest-juiceshop), and the incident
+> response in [**ir-threat-hunt**](../ir-threat-hunt).
 
 ---
 
@@ -112,8 +118,9 @@ A quick highlight reel of what this repo demonstrates — the parts I'm proudest
   ending in a live Kerberoast attack that produces a Wazuh alert. →
   [verification](docs/verification.md)
 - **📓 Red→Blue project walkthroughs.** Four end-to-end projects that attack a
-  misconfiguration and then detect it with a matching custom Wazuh rule. →
-  [projects](projects/)
+  misconfiguration and then detect it with a matching custom Wazuh rule — the attacks
+  in [ad-attack-chain](../ad-attack-chain), the matching detections in
+  [detection-engineering](../detection-engineering).
 - **🔐 Secure by construction.** Zero secrets in git — runtime-prompted passwords,
   gitignored `.env`, locally-generated certs, referenced (not vendored) ISOs/configs.
 - **♻️ Reproducible.** Numbered guides + idempotent scripts rebuild the whole lab from

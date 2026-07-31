@@ -94,7 +94,7 @@ internet reachable. Tooling shipped with Kali (no install needed): `impacket-Get
 ### Project 01 — Kerberoasting run end-to-end ✅
 As low-priv user `a.mokaya`, `impacket-GetUserSPNs ... -request` pulled the TGS
 (RC4/etype 23) for `svc_sql`. Cracked offline → **`svc_sql : P@ssw0rd`** in <1s.
-Full record + evidence: [`../projects/01-kerberoasting/RUN-LOG.md`](../projects/01-kerberoasting/RUN-LOG.md).
+Full record + evidence: [`../../ad-attack-chain/engagement/01-kerberoasting/RUN-LOG.md`](../../ad-attack-chain/engagement/01-kerberoasting/RUN-LOG.md).
 
 **Real issue hit:** hashcat found no compute backend (`CL_PLATFORM_NOT_FOUND_KHR`) —
 GPU-less VM and Kali 2026.2's mirror had no `pocl` (CPU OpenCL) package. Rather than
@@ -164,7 +164,7 @@ The `GetUserSPNs` request from KALI01 produced a 4769/RC4 event on DC01 → the 
 shipped it → **rule 100010 fired**. In the dashboard, `rule.id:100010` returns 1 hit
 with the right fields (eventID 4769, ticketEncryptionType 0x17, serviceName svc_sql,
 source `10.10.10.40`). Full record + dashboard screenshots:
-[`../projects/01-kerberoasting/RUN-LOG.md`](../projects/01-kerberoasting/RUN-LOG.md).
+[`../../ad-attack-chain/engagement/01-kerberoasting/RUN-LOG.md`](../../ad-attack-chain/engagement/01-kerberoasting/RUN-LOG.md).
 
 **Issues hit / notes:**
 - The agent's Sysmon eventchannel subscription errors `15007` until Sysmon is
