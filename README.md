@@ -53,10 +53,10 @@ Full diagram, IP scheme, and per-VM RAM/CPU budget: **[docs/architecture.md](doc
 
 > **The red/blue projects live in their own repos** now (this repo is the shared
 > *foundation* they all run on): the attacks are in
-> [**ad-attack-chain**](../ad-attack-chain), the detections in
-> [**detection-engineering**](../detection-engineering), the web pentest in
-> [**webapp-pentest-juiceshop**](../webapp-pentest-juiceshop), and the incident
-> response in [**ir-threat-hunt**](../ir-threat-hunt).
+> [**ad-attack-chain**](https://github.com/manlikefelo/ad-attack-chain), the detections in
+> [**detection-engineering**](https://github.com/manlikefelo/detection-engineering), the web pentest in
+> [**webapp-pentest-juiceshop**](https://github.com/manlikefelo/webapp-pentest-juiceshop), and the incident
+> response in [**ir-threat-hunt**](https://github.com/manlikefelo/ir-threat-hunt).
 
 ---
 
@@ -119,8 +119,8 @@ A quick highlight reel of what this repo demonstrates — the parts I'm proudest
   [verification](docs/verification.md)
 - **📓 Red→Blue project walkthroughs.** Four end-to-end projects that attack a
   misconfiguration and then detect it with a matching custom Wazuh rule — the attacks
-  in [ad-attack-chain](../ad-attack-chain), the matching detections in
-  [detection-engineering](../detection-engineering).
+  in [ad-attack-chain](https://github.com/manlikefelo/ad-attack-chain), the matching detections in
+  [detection-engineering](https://github.com/manlikefelo/detection-engineering).
 - **🔐 Secure by construction.** Zero secrets in git — runtime-prompted passwords,
   gitignored `.env`, locally-generated certs, referenced (not vendored) ISOs/configs.
 - **♻️ Reproducible.** Numbered guides + idempotent scripts rebuild the whole lab from
