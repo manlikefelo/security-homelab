@@ -1,11 +1,11 @@
 # Verification checklist
 
 Proof the lab is built correctly and the **attack → log → detect** pipeline works.
-Work top to bottom; each item has a command/action and the expected result. Drop a
-screenshot where the placeholders are — those are the artifacts a reviewer skims.
+Work top to bottom; each item has a command/action and the expected result.
 
-> **Reviewer note:** this file is the evidence. The screenshots below are where you
-> can confirm — without building anything — that AD, Sysmon, and Wazuh actually work.
+> **Reviewer note:** checked items have linked evidence or a recorded result. Unchecked
+> items weren't formally signed off in this checklist. Sections 3, 5, 6, and 8 link the
+> evidence that AD, Wazuh, and an end-to-end detection worked.
 
 ---
 
@@ -13,8 +13,6 @@ screenshot where the placeholders are — those are the artifacts a reviewer ski
 - [ ] Every VM pings the DC: `ping 10.10.10.10` succeeds from WS01/UB01/KALI01/WAZUH01.
 - [ ] With NAT detached, a lab VM **cannot** reach the internet (`ping 8.8.8.8` fails).
 - [ ] AD DNS resolves: `nslookup dc01.lab.local 10.10.10.10` returns `10.10.10.10`.
-
-📸 _screenshot: `nslookup dc01.lab.local` + a successful/blocked ping_
 
 ## 2. Active Directory
 - [ ] `Get-ADDomain` on DC01 shows `lab.local`, mode `WinThreshold`.
@@ -24,8 +22,6 @@ screenshot where the placeholders are — those are the artifacts a reviewer ski
 - [ ] `(Get-ADUser b.otieno -Properties DoesNotRequirePreAuth).DoesNotRequirePreAuth`
       is `True`.
 - [ ] `Get-ADGroupMember 'Domain Admins'` includes `b.otieno` (intentional).
-
-📸 _screenshot: `Get-ADUser -Filter *` table + the svc_sql SPN_
 
 ## 3. Domain join (WS01) ✅ verified 2026-07-26
 - [x] `(Get-CimInstance Win32_ComputerSystem).Domain` on WS01 = `lab.local`
@@ -44,17 +40,15 @@ screenshot where the placeholders are — those are the artifacts a reviewer ski
 - [x] SwiftOnSecurity config loaded — installer reported *"Configuration file
       validated"* (schema 4.50) via `scripts/sysmon/install-sysmon.ps1`.
 
-📸 _screenshot: recent Sysmon Operational events (WS01)_
-
 ## 5. Wazuh stack (WAZUH01) ✅ verified 2026-07-25
 - [x] `docker compose ps` shows indexer + manager + dashboard running (Wazuh 4.9.0).
 - [x] Indexer cluster health is **green** (`GET /_cluster/health`), 11/11 shards active.
 - [x] Manager API authenticates and reports `v4.9.0 server`.
 - [x] Dashboard loads at **`https://10.10.10.50`** and serves the Wazuh login app.
 
-📸 _evidence: [`../setup/evidence/wazuh01-stack-verification.txt`](../setup/evidence/wazuh01-stack-verification.txt) — dashboard login screenshot to be added on the next run with a browser_
+📸 _evidence: [`../setup/evidence/wazuh01-stack-verification.txt`](../setup/evidence/wazuh01-stack-verification.txt)_
 
-## 6. Every host is an Active agent  (DC01 2025-07-25 · WS01 2026-07-26)
+## 6. Every host is an Active agent  (DC01 2026-07-25 · WS01 2026-07-26)
 - [x] **DC01** enrolled and **Active** — `agent_control -l` lists `ID: 001, DC01, Active`.
 - [x] **WS01** enrolled and **Active** — `ID: 002, WS01, Active`. Manager reports its OS
       (`Windows 11 Enterprise Evaluation`), agent `v4.9.0`, and a live keep-alive, so it
@@ -75,7 +69,9 @@ screenshot where the placeholders are — those are the artifacts a reviewer ski
       `data.win.system.channel: "Microsoft-Windows-Sysmon/Operational"` returns the
       matching process-create (ID 1) event.
 
-📸 _screenshot: the Sysmon process-create event for WS01 in Wazuh_
+> **Known gap:** my [adversary-emulation](https://github.com/manlikefelo/adversary-emulation)
+> run found that Sysmon process-create telemetry from WS01 wasn't reaching Wazuh. See its
+> `gap-analysis.md`.
 
 ## 8. End-to-end: a real detection fires  ✅ 2026-07-25
 - [x] From KALI01, Kerberoasted `svc_sql` (`impacket-GetUserSPNs lab.local/a.mokaya -request`).
@@ -87,6 +83,5 @@ screenshot where the placeholders are — those are the artifacts a reviewer ski
 ---
 
 ### Sign-off
-When every box is checked and the eight screenshots are captured, the lab is proven:
-isolated network ✅, AD with seeded weaknesses ✅, Sysmon telemetry ✅, Wazuh
-ingesting from every host ✅, and a real attack producing a real alert ✅.
+The lab is fully signed off when every box above is checked. A real attack producing a
+real alert is already proven in section 8.
