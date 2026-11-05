@@ -273,13 +273,3 @@ box back to before the agent existed. Not a data-loss issue, the victims are int
 UB01's telemetry won't reach Wazuh until the agent is reinstalled. I'll re-enroll it at the
 start of the web-pentest project (that's the phase that actually needs UB01's logs in the
 SIEM anyway), then re-snapshot so it sticks.
-
----
-
-## Remaining
-- [x] KALI01: installed, DNS pointing at DC, Project 01 (Kerberoasting) proven.
-- [x] WAZUH01: Ubuntu + Wazuh single-node SIEM up & verified (4.9.0, indexer green).
-- [x] DC01 Wazuh agent enrolled (Active) + Kerberoast detected via rule 100010.
-- [x] WS01: Win11 domain-joined workstation + Sysmon + agent **Active**.
-- [x] UB01: Ubuntu + Docker victims (Juice Shop/DVWA/SSH) + Wazuh agent **Active** (id 004).
-- [ ] Projects 02 (AS-REP) / 03 (DCSync) / 04 (BloodHound), run each attack → Wazuh alert.

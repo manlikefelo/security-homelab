@@ -1,4 +1,4 @@
-# === Secrets — never commit ===
+# === Secrets - never commit ===
 .env
 *.env
 !.env.example
@@ -18,7 +18,7 @@ content/
 *_password*
 *secret*
 
-# === Large build artifacts — reference by URL instead (see setup/00) ===
+# === Large build artifacts - reference by URL instead (see setup/00) ===
 *.iso
 *.ova
 *.vdi
