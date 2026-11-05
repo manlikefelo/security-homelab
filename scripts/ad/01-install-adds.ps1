@@ -10,7 +10,7 @@
 
     Idempotent: safe to re-run. If the role/forest already exists it is skipped.
 
-    Reviewer note: I keep the DSRM password OUT of this script — it is prompted for
+    Reviewer note: I keep the DSRM password OUT of this script: it is prompted for
     at runtime so no secret is ever committed to git.
 #>
 

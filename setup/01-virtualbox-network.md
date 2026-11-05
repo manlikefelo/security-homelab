@@ -1,10 +1,10 @@
-# 01 — VirtualBox isolated network
+# 01: VirtualBox isolated network
 
 Goal: create one **host-only** network (`10.10.10.0/24`) that carries all lab traffic,
 isolated from the home LAN. NAT is added per-VM only for build-time downloads and
 detached afterwards.
 
-> **Reviewer note:** isolation is a safety control — the lab contains deliberately
+> **Reviewer note:** isolation is a safety control: the lab contains deliberately
 > vulnerable machines. Look at how NAT is *detached* before any attack phase.
 
 ---
@@ -47,9 +47,9 @@ CLI example for DC01:
 
 Set these inside the OS (they persist across snapshots/reboots).
 
-### Windows (DC01 / WS01) — run in elevated PowerShell
+### Windows (DC01 / WS01): run in elevated PowerShell
 ```powershell
-# DC01 example — adjust IP per host from the IP scheme table
+# DC01 example - adjust IP per host from the IP scheme table
 $ifIndex = (Get-NetAdapter | Where-Object Status -eq 'Up' |
             Where-Object { $_.InterfaceDescription -notmatch 'NAT' }).ifIndex
 New-NetIPAddress -InterfaceIndex $ifIndex -IPAddress 10.10.10.10 `
@@ -59,7 +59,7 @@ Set-DnsClientServerAddress -InterfaceIndex $ifIndex -ServerAddresses 127.0.0.1
 ```
 For **WS01**, use `10.10.10.20` and DNS `10.10.10.10`.
 
-### Ubuntu (UB01 / WAZUH01) — netplan
+### Ubuntu (UB01 / WAZUH01): netplan
 `/etc/netplan/01-lab.yaml` (use the host-only interface name from `ip a`, e.g. `enp0s3`):
 ```yaml
 network:
@@ -97,4 +97,4 @@ nslookup dc01.lab.local 10.10.10.10   # once AD DNS is up (guide 02)
 | KALI01  | 10.10.10.40  | 10.10.10.10 |
 | WAZUH01 | 10.10.10.50  | 10.10.10.10 |
 
-➡️ Next: **[02-active-directory.md](02-active-directory.md)**
+→ Next: **[02-active-directory.md](02-active-directory.md)**

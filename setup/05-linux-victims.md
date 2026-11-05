@@ -1,13 +1,13 @@
-# 05 — Linux victim containers (UB01)
+# 05: Linux victim containers (UB01)
 
 Goal: deploy deliberately vulnerable Linux services as **Docker containers** on UB01
-(`10.10.10.30`) instead of full VMs — the RAM-saving decision from the architecture.
+(`10.10.10.30`) instead of full VMs: the RAM-saving decision from the architecture.
 
 > **Reviewer note:** containerising the victims is what lets me rebuild a target with
 > one command and keeps the whole Linux attack surface under 2 GB. See
 > [../victims/docker-compose.yml](../victims/docker-compose.yml).
 
-> ⚠️ These images are intentionally vulnerable. Only run them on the isolated
+> These images are intentionally vulnerable. Only run them on the isolated
 > host-only network (guide 01). Keep the NAT adapter **detached** during attacks.
 
 ---

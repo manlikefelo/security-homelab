@@ -1,16 +1,16 @@
 # security-homelab
 
 A **reproducible, fully free** cybersecurity home lab for practising both **red-team**
-(Active Directory attacks) and **blue-team** (SIEM detection) skills — engineered to
+(Active Directory attacks) and **blue-team** (SIEM detection) skills, engineered to
 run on a **single 16 GB laptop** using VirtualBox.
 
 The lab stands up a small Active Directory domain with realistic users and *intentional
 misconfigurations*, ships rich Windows telemetry via **Sysmon**, and ingests everything
-into a single-node **Wazuh** SIEM — so I can attack a target, then watch the attack turn
+into a single-node **Wazuh** SIEM, so I can attack a target, then watch the attack turn
 into an alert.
 
 > **The design constraint that shapes everything:** a full AD + SIEM lab won't fit in
-> 16 GB if every VM runs at once. So the lab runs in **phases** — the red-team VMs and
+> 16 GB if every VM runs at once. So the lab runs in **phases**: the red-team VMs and
 > Wazuh never run together (except one tightly-budgeted live-detection phase). Every
 > phase is kept under ~12 GB. See **[docs/low-ram-operating-guide.md](docs/low-ram-operating-guide.md)**.
 
@@ -21,11 +21,11 @@ into an alert.
 ```mermaid
 flowchart TB
     subgraph LAB["Host-Only LAN  10.10.10.0/24 (isolated)"]
-        DC["🖥️ DC01 · Win Server 2022<br/>AD DS + DNS · 10.10.10.10 · 4GB"]
-        WS["💻 WS01 · Win 10/11<br/>Domain workstation · 10.10.10.20 · 4GB"]
-        UB["🐧 UB01 · Ubuntu+Docker<br/>Linux victims · 10.10.10.30 · 2GB"]
-        KALI["😈 KALI01 · Kali<br/>Attacker · 10.10.10.40 · 4GB"]
-        WAZUH["📊 WAZUH01 · Wazuh SIEM<br/>10.10.10.50 · 6GB"]
+        DC["DC01 · Win Server 2022<br/>AD DS + DNS · 10.10.10.10 · 4GB"]
+        WS["WS01 · Win 10/11<br/>Domain workstation · 10.10.10.20 · 4GB"]
+        UB["UB01 · Ubuntu+Docker<br/>Linux victims · 10.10.10.30 · 2GB"]
+        KALI["KALI01 · Kali<br/>Attacker · 10.10.10.40 · 4GB"]
+        WAZUH["WAZUH01 · Wazuh SIEM<br/>10.10.10.50 · 6GB"]
     end
     KALI ==attacks==> DC & WS & UB
     DC & WS & UB -.agent logs.-> WAZUH
@@ -43,7 +43,7 @@ Full diagram, IP scheme, and per-VM RAM/CPU budget: **[docs/architecture.md](doc
 | [`docs/architecture.md`](docs/architecture.md) | Network diagram, IP scheme, RAM/CPU budget, minimum-viable lab |
 | [`docs/low-ram-operating-guide.md`](docs/low-ram-operating-guide.md) | Exactly which VMs to power on per phase + snapshotting |
 | [`docs/verification.md`](docs/verification.md) | Checklist proving the lab works (with screenshot slots) |
-| [`docs/build-log.md`](docs/build-log.md) | Dated record of actually building the lab — what's done & verified |
+| [`docs/build-log.md`](docs/build-log.md) | Dated record of actually building the lab. What's done & verified |
 | [`docs/reviewer-path.md`](docs/reviewer-path.md) | A 3-minute guided tour for a hiring manager |
 | [`setup/00`–`05`](setup/) | Numbered, teach-as-you-go build guides |
 | [`scripts/ad/`](scripts/ad/) | Idempotent PowerShell to build the domain + inject misconfigs |
@@ -62,7 +62,7 @@ Full diagram, IP scheme, and per-VM RAM/CPU budget: **[docs/architecture.md](doc
 
 ## Quick bring-up
 
-The lab spans several VMs, so "one command" isn't literal — but each component is
+The lab spans several VMs, so "one command" isn't literal, but each component is
 close to it. Full detail in [`setup/`](setup/); the short version:
 
 ```bash
@@ -98,32 +98,32 @@ cd wazuh   && docker compose down -v
 # VMs: restore the clean snapshot or power off (see low-ram guide)
 ```
 To pause between sessions without losing state, `VBoxManage controlvm <VM> savestate`
-or restore a snapshot — see the [operating guide](docs/low-ram-operating-guide.md).
+or restore a snapshot, see the [operating guide](docs/low-ram-operating-guide.md).
 
 ---
 
 ## Showcase
 
-A quick highlight reel of what this repo demonstrates — the parts I'm proudest of:
+A quick highlight reel of what this repo demonstrates: the parts I'm proudest of:
 
-- **🧠 Constraint-driven engineering.** A complete AD + SIEM detection lab that runs on
-  16 GB by phasing workloads — every phase budgeted under 12 GB, with a documented
+- **Constraint-driven engineering.** A complete AD + SIEM detection lab that runs on
+  16 GB by phasing workloads: every phase budgeted under 12 GB, with a documented
   8 GB minimum-viable variant. → [architecture](docs/architecture.md) ·
   [operating guide](docs/low-ram-operating-guide.md)
-- **⚔️ Offense + defense of the same findings.** Four intentional AD misconfigurations
+- **Offense + defense of the same findings.** Four intentional AD misconfigurations
   (Kerberoasting, AS-REP roasting, DCSync, Domain Admins nesting), each annotated with
   the attack (MITRE ATT&CK IDs) *and* how a defender detects it. →
   [03-inject-misconfigs.ps1](scripts/ad/03-inject-misconfigs.ps1)
-- **🔭 Real detection pipeline.** Sysmon (SwiftOnSecurity config) → Wazuh single-node,
+- **Real detection pipeline.** Sysmon (SwiftOnSecurity config) → Wazuh single-node,
   ending in a live Kerberoast attack that produces a Wazuh alert. →
   [verification](docs/verification.md)
-- **📓 Red→Blue project walkthroughs.** Four end-to-end projects that attack a
-  misconfiguration and then detect it with a matching custom Wazuh rule — the attacks
+- **Red→Blue project walkthroughs.** Four end-to-end projects that attack a
+  misconfiguration and then detect it with a matching custom Wazuh rule: the attacks
   in [ad-attack-chain](https://github.com/manlikefelo/ad-attack-chain), the matching detections in
   [detection-engineering](https://github.com/manlikefelo/detection-engineering).
-- **🔐 Secure by construction.** Zero secrets in git — runtime-prompted passwords,
+- **Secure by construction.** Zero secrets in git, runtime-prompted passwords,
   gitignored `.env`, locally-generated certs, referenced (not vendored) ISOs/configs.
-- **♻️ Reproducible.** Numbered guides + idempotent scripts rebuild the whole lab from
+- **Reproducible.** Numbered guides + idempotent scripts rebuild the whole lab from
   scratch. 100% free tooling.
 
 **→ Hiring manager?** Start with the [3-minute reviewer path](docs/reviewer-path.md).

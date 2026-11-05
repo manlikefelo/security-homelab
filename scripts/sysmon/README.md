@@ -7,7 +7,7 @@ This folder deliberately does **not** vendor the Sysmon config XML. Instead,
 <https://github.com/SwiftOnSecurity/sysmon-config>
 
 Why reference rather than commit:
-- It's actively maintained upstream — pinning a stale copy here would rot.
+- It's actively maintained upstream: pinning a stale copy here would rot.
 - It keeps this repo free of large third-party files.
 
 If you need **offline/air-gapped** installs, download `sysmonconfig-export.xml` and

@@ -1,10 +1,10 @@
-# Troubleshooting — real issues I hit building this lab
+# Troubleshooting: real issues I hit building this lab
 
 These are the actual problems I ran into standing up the lab on a Windows 10 host, and
 exactly how I fixed each one. They're documented so a reader can reproduce the lab
 without losing the time I lost.
 
-> **Reviewer note:** this file is honest engineering evidence — real infrastructure
+> **Reviewer note:** this file is honest engineering evidence, real infrastructure
 > problems, diagnosed and solved, not a frictionless fantasy build.
 
 ---
@@ -20,11 +20,11 @@ appeared; the VM sat on a **black screen** and never reached the installer. A
 error: Unsupported resolution for screen shot: 0x0 (screen 0)
 ```
 
-`0x0` resolution = the guest was producing **no video output at all** — the EFI
+`0x0` resolution = the guest was producing **no video output at all**: the EFI
 firmware hung before initialising the display. This is a known VirtualBox EFI quirk,
 made worse when Windows' own hypervisor owns the virtualization extensions (see #2).
 
-**Fix — use BIOS firmware for the Windows VMs.** Windows Server 2022 and Windows
+**Fix: use BIOS firmware for the Windows VMs.** Windows Server 2022 and Windows
 10/11 install fine in BIOS/MBR mode, and VirtualBox's BIOS DVD-boot is far more
 reliable than its EFI path. The disk was still blank, so switching cost nothing:
 
@@ -38,10 +38,10 @@ $vbm = "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe"
 ```
 
 After this the VM auto-booted the ISO straight to **"Loading files…"** and the
-Windows Setup screen — no "press any key" needed.
+Windows Setup screen: no "press any key" needed.
 
 > Applies to **DC01 and WS01**. Do it *before* installing the OS. If you already
-> installed Windows in EFI mode and it works, leave it — don't switch firmware on a
+> installed Windows in EFI mode and it works, leave it, don't switch firmware on a
 > disk that already has an OS or it won't boot.
 
 **Verifying video is alive from the host** (handy when you can't tell if it's slow or
@@ -56,15 +56,15 @@ truly hung):
 
 **Symptom.** On the host, `(Get-CimInstance Win32_ComputerSystem).HypervisorPresent`
 returned **True**, and `(Get-CimInstance Win32_Processor).VirtualizationFirmwareEnabled`
-was **False** — meaning Windows' hypervisor platform (Hyper-V / WSL2 / VBS) held the
+was **False**, meaning Windows' hypervisor platform (Hyper-V / WSL2 / VBS) held the
 VT-x extensions, not VirtualBox.
 
-**What it means.** VirtualBox **7.x runs anyway** via its Hyper-V compatibility layer —
+**What it means.** VirtualBox **7.x runs anyway** via its Hyper-V compatibility layer:
 VMs work, just **slower** than native. (Old VirtualBox 6.x and VMware Workstation 16
-can't cope with this and fail to start VMs — one reason I chose VirtualBox 7.x.)
+can't cope with this and fail to start VMs: one reason I chose VirtualBox 7.x.)
 
 **When to act.** Only if the VMs are painfully slow. To give the extensions back to
-VirtualBox for near-native speed (⚠️ this **breaks WSL2 / Docker Desktop / Windows
+VirtualBox for near-native speed (this **breaks WSL2 / Docker Desktop / Windows
 Sandbox** until reverted, and needs a reboot):
 
 ```powershell
@@ -76,7 +76,7 @@ Disable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform, Hype
 ```
 Re-enable later with `bcdedit /set hypervisorlaunchtype auto` + a reboot.
 
-> For this lab I **left it on** — the compatibility-layer speed was acceptable and I
+> For this lab I **left it on**: the compatibility-layer speed was acceptable and I
 > didn't want to disturb WSL2/Docker on the host. Build first, optimise only if needed.
 
 ---
@@ -84,7 +84,7 @@ Re-enable later with `bcdedit /set hypervisorlaunchtype auto` + a reboot.
 ## 3. A stray VirtualBox fork from another app (LDPlayer)
 
 **Symptom.** The only `VBoxManage.exe` on the host belonged to **LDPlayer** (an
-Android emulator) at `C:\Program Files\ldplayer9box\VBoxManage.exe`, version 6.1.36 —
+Android emulator) at `C:\Program Files\ldplayer9box\VBoxManage.exe`, version 6.1.36:
 a private, modified VirtualBox fork. It **cannot** run standard Windows/Linux guests,
 and its drivers can fight the real VirtualBox over the same virtualization hooks.
 
@@ -107,10 +107,10 @@ Get-ChildItem "C:\Program Files" -Filter VBoxManage.exe -Recurse -Depth 3 -EA Si
 **Symptom.** The winget install failed with `Installer failed with exit code: 1`.
 
 **Cause / fix.** Two culprits:
-1. Passing **`--location`** to winget — the VirtualBox installer doesn't honour it and
+1. Passing **`--location`** to winget: the VirtualBox installer doesn't honour it and
    aborts. Drop it; VirtualBox installs to `C:\Program Files` (only ~250 MB). Redirect
    the **VM library** separately with `VBoxManage setproperty machinefolder` instead.
-2. A **dismissed UAC prompt.** The install needs elevation — approve the UAC dialog.
+2. A **dismissed UAC prompt.** The install needs elevation, approve the UAC dialog.
 
 Working command:
 ```powershell
@@ -119,7 +119,7 @@ winget install --id Oracle.VirtualBox -e --accept-package-agreements --accept-so
 
 ---
 
-## 5. Disk space — VMs must not land on a full system drive
+## 5. Disk space: VMs must not land on a full system drive
 
 **Symptom.** C: had only ~11 GB free; the lab needs ~150–250 GB.
 
@@ -133,7 +133,7 @@ Keep ISOs on the same drive too. The VirtualBox *application* can stay on C: (it
 
 ## 6. ISO download links 404 (versions drift)
 
-**Symptom.** A pinned Kali URL (`kali-linux-2024.4-…`) returned **404** — that release
+**Symptom.** A pinned Kali URL (`kali-linux-2024.4-…`) returned **404**, that release
 had rolled off the mirror.
 
 **Fix.** Use the version-agnostic **`/current/`** path for Kali and the release
@@ -152,7 +152,7 @@ directory for Ubuntu, and read the actual filename from the listing:
 
 **Symptom.** After installing Kali, the GDM login greeter shows only a black screen
 with a cursor, and `VBoxManage controlvm KALI01 screenshotpng` captures come back black
-or as torn diagonal stripes. The session is actually running — it just isn't rendering.
+or as torn diagonal stripes. The session is actually running. It just isn't rendering.
 
 **Cause.** The default `vboxsvga` graphics controller with 64 MB VRAM doesn't drive the
 Kali GNOME (Wayland) session reliably on this host.
@@ -177,7 +177,7 @@ Hyper-V compat layer (same as Kali), so I installed with the disk on an **IDE (P
 controller. But the *installed* Ubuntu then **hung in initramfs at "Loading essential
 drivers"** because its generic initramfs booted probing AHCI and never found the IDE
 root device. Fix: after the install completes, power off and move the .vdi back to
-**SATA** — Ubuntu boots fine from SATA at runtime (the partitioner hang is an
+**SATA**: Ubuntu boots fine from SATA at runtime (the partitioner hang is an
 installer-only problem). So: **IDE for the install, SATA for running.**
 ```powershell
 $vbm storageattach WAZUH01 --storagectl IDE  --port 0 --device 0 --medium none
@@ -186,7 +186,7 @@ $vbm storageattach WAZUH01 --storagectl SATA --port 0 --device 0 --type hdd --me
 
 **Console framebuffer freezes after early boot (headless is fine).**
 With Ubuntu server the VBox console screenshot freezes on a boot frame and never
-repaints (`vboxvideodrmfb`/`vmwgfx` DRM quirk) — the OS is actually up. Don't trust
+repaints (`vboxvideodrmfb`/`vmwgfx` DRM quirk): the OS is actually up. Don't trust
 the frozen screen; verify via the network instead. I drove the box over **SSH**: add a
 NAT port-forward and connect to it (no host-only IP needed for the first step).
 ```powershell
@@ -214,7 +214,7 @@ of `Unable to connect to socket 'queue/db/wdb' ... Connection refused (111)`.
 
 **Cause.** On this 6 GB (squeezed to 4 GB), memory-thrashing VM, `wazuh-db` (wdb)
 occasionally fails to come up cleanly at boot. Because every other daemon
-(analysisd/remoted/authd) depends on the wdb socket, they all stay down — so the
+(analysisd/remoted/authd) depends on the wdb socket, they all stay down, so the
 host's docker-proxy accepts the agent's TCP SYN but the backend refuses it.
 
 **Fix.** Restart the manager container so init re-runs in order (wdb first):
@@ -235,7 +235,7 @@ username or password* in the dashboard, and a direct check is 401:
 `docker exec ...indexer... curl -k -u admin:<env-pw> https://localhost:9200/ -> 401`.
 
 **Cause.** Editing `INDEXER_PASSWORD` in `.env` does **not** re-hash the password inside
-the indexer's OpenSearch security index — that only happens if `securityadmin.sh` is
+the indexer's OpenSearch security index, that only happens if `securityadmin.sh` is
 re-run against the new `internal_users.yml`. If that step was skipped, the indexer is
 still running with the **stock demo password `SecretPassword`**.
 
@@ -249,15 +249,15 @@ follow-up; the lab is isolated so the demo password is acceptable for now.)
 
 Useful when capturing dashboard screenshots without a mouse on the host:
 
-- **The GDM greeter renders black to `screenshotpng` until it's fully drawn** — wait
+- **The GDM greeter renders black to `screenshotpng` until it's fully drawn**: wait
   for `gdm.service` to start, then tap a key once (`keyboardputscancode 39 b9`) and it
   paints. Log in blind: the greeter pre-focuses the password field, so
   `keyboardputstring '<pw>'` + Enter works.
 - **Keyboard injection (`keyboardputscancode`/`keyboardputstring`) is reliable**; use it
-  for everything — Ctrl+L to focus Firefox's address bar (`1d 26 a6 9d`), typing URLs,
+  for everything: Ctrl+L to focus Firefox's address bar (`1d 26 a6 9d`), typing URLs,
   accepting the self-signed cert (Tab to *Advanced* → Enter, scroll *End*, Tab to
   *Accept the Risk and Continue* → Enter), and filling login forms.
-- **Launch Firefox at a URL from the session env** rather than fighting window focus —
+- **Launch Firefox at a URL from the session env** rather than fighting window focus,
   export the running session's `DISPLAY`/`WAYLAND_DISPLAY`/`XAUTHORITY`/
   `DBUS_SESSION_BUS_ADDRESS`/`XDG_RUNTIME_DIR` (read them from
   `/proc/$(pgrep firefox-esr)/environ`) then `firefox --new-window "<url>" &`.
@@ -275,10 +275,10 @@ Useful when capturing dashboard screenshots without a mouse on the host:
 
 ---
 
-## DCSync / enumeration produce NO Wazuh alert — Event 4662 not being logged
+## DCSync / enumeration produce NO Wazuh alert: Event 4662 not being logged
 
 **Symptom.** The DCSync (Project 03) and BloodHound-enumeration (Project 04) blue phases
-fire nothing — `grep 4662 alerts.json` returns 0 — even though the attack clearly ran
+fire nothing: `grep 4662 alerts.json` returns 0, even though the attack clearly ran
 and the DC01 agent is Active.
 
 **Cause.** Windows does **not** audit directory object access (Event 4662) by default.
@@ -313,12 +313,12 @@ After this, re-run the DCSync/collection and the 4662s flow → rules 100012 / 1
 ## WAZUH01 sshd never sends its banner during 3-VM phases (indexer thrash)
 
 **Symptom.** During a live DC01 + KALI01 + WAZUH01 phase, WAZUH01's SSH (127.0.0.1:2222)
-accepts TCP but times out "during banner exchange" — even after powering Kali off, and
+accepts TCP but times out "during banner exchange", even after powering Kali off, and
 even after a hard reset. The console framebuffer is frozen (cosmetic) so it looks hung.
 
 **Cause.** At 6 GB the single-node Wazuh indexer's JVM plus the manager/dashboard
 containers thrash into swap under the 3-VM memory ceiling, and never recover on their
-own — sshd can't get enough CPU/RAM to complete the handshake.
+own, sshd can't get enough CPU/RAM to complete the handshake.
 
 **Fix.**
 1. Give WAZUH01 more RAM: `VBoxManage modifyvm WAZUH01 --memory 8192` (VM off first).
@@ -334,7 +334,7 @@ Never try to bring the whole stack up while another VM is already competing for 
 ## Wazuh Discover shows "Select a datasource" / won't render alert rows
 
 **Symptom.** Navigating Discover by URL (the newer `/app/data-explorer/discover` route)
-shows **"Select a datasource"** and spins on *Searching* forever — the `rule.id:…`
+shows **"Select a datasource"** and spins on *Searching* forever: the `rule.id:…`
 query is in the search bar but no hits render, even though the alerts exist in the
 index (`curl .../wazuh-alerts-*/_count?q=rule.id:100012` returns a count). The
 data-explorer app needs a **mouse click** on the datasource picker, which GNOME's
@@ -352,7 +352,7 @@ Then open the **classic** app URL (note `/app/discover`, not `/app/data-explorer
 ```
 https://10.10.10.50/app/discover#/?_g=(time:(from:now-7d,to:now))&_a=(columns:!(_source),index:'wazuh-alerts',interval:auto,query:(language:kuery,query:'rule.id:100012'),sort:!())
 ```
-Discover then shows `wazuh-alerts-*` selected, the histogram, and the `_source` rows —
+Discover then shows `wazuh-alerts-*` selected, the histogram, and the `_source` rows:
 the rendered screenshot, no clicks required. This is how the Project 01, 03 and 04
 dashboard alert shots were captured.
 

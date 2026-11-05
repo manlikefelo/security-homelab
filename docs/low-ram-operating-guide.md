@@ -20,7 +20,7 @@ how to move between phases without losing state. It is the operational companion
 | WS01     | 4 GB        | 2 GB         | Domain workstation (victim) |
 | UB01     | 2 GB        | 1 GB         | Docker host for Linux victims |
 | KALI01   | 4 GB        | 2 GB         | Attacker |
-| WAZUH01  | 6 GB        | 4 GB         | SIEM (memory-hungry — never runs with red VMs unless validating) |
+| WAZUH01  | 6 GB        | 4 GB         | SIEM (memory-hungry, never runs with red VMs unless validating) |
 
 Set RAM in **VirtualBox → VM → Settings → System → Motherboard → Base Memory**, or:
 
@@ -34,9 +34,9 @@ Set RAM in **VirtualBox → VM → Settings → System → Motherboard → Base 
 
 ---
 
-## Phase 1 — RED: attack (Wazuh OFF)
+## Phase 1: RED: attack (Wazuh OFF)
 
-Goal: run exploits/enumeration against a target. The SIEM is **off** — I'm generating
+Goal: run exploits/enumeration against a target. The SIEM is **off**: I'm generating
 telemetry, not watching it yet.
 
 **Power ON:**
@@ -46,18 +46,18 @@ telemetry, not watching it yet.
 | KALI01 (4 GB)       |     | | KALI01 (4 GB) | |
 | UB01 (2 GB)         |     | | DC01 (4 GB)   | |
 |                     |     | | WS01 (4 GB)   | |
-| **Total: 6 GB** ✅  |     | | **Total: 12 GB** ✅ | |
+| **Total: 6 GB** |     | | **Total: 12 GB** | |
 
 **Power OFF:** WAZUH01 (and any VM not in the row above).
 
 The Windows targets still have Sysmon + Wazuh **agents** installed and logging locally
 to disk / the Windows event log during this phase. The agents just can't reach the
-manager because WAZUH01 is off — that's fine, the events are captured and I replay/
+manager because WAZUH01 is off. That's fine, the events are captured and I replay/
 forward them in the blue phase.
 
 ---
 
-## Phase 2 — BLUE: detection & replay (targets + Wazuh, Kali OFF)
+## Phase 2: BLUE: detection & replay (targets + Wazuh, Kali OFF)
 
 Goal: bring the SIEM up and confirm the attack telemetry from Phase 1 turns into
 alerts. Kali is **off**.
@@ -69,7 +69,7 @@ alerts. Kali is **off**.
 | WAZUH01  | 6 GB |
 | DC01     | 4 GB |
 | WS01 *or* UB01 (whichever I attacked) | 4 / 2 GB |
-| **Total** | **~12 GB (WS) / ~10 GB (UB)** ✅ |
+| **Total** | **~12 GB (WS) / ~10 GB (UB)** |
 
 **Power OFF:** KALI01.
 
@@ -80,19 +80,19 @@ vulnerable service) and watch the alerts land.
 
 ---
 
-## Phase 3 — LIVE-DETECTION validation (DC + Wazuh + Kali, DC squeezed to 2 GB)
+## Phase 3: LIVE-DETECTION validation (DC + Wazuh + Kali, DC squeezed to 2 GB)
 
-Goal: the money shot — attacker, SIEM, and DC all live at once, so an attack from Kali
+Goal: the money shot, attacker, SIEM, and DC all live at once, so an attack from Kali
 produces a Wazuh alert **in real time**. This is the tightest phase.
 
 **Power ON (in this order):**
 
 | VM       | RAM  | Notes |
 |----------|------|-------|
-| DC01     | **2 GB** | squeezed — see command above |
+| DC01     | **2 GB** | squeezed, see command above |
 | WAZUH01  | 6 GB | needs full memory for the indexer |
 | KALI01   | 4 GB | attacker |
-| **Total** | **12 GB** ✅ | at the ceiling — close other host apps |
+| **Total** | **12 GB** | at the ceiling, close other host apps |
 
 **Power OFF:** WS01, UB01.
 
@@ -101,19 +101,19 @@ attempts, LDAP enumeration) directly at DC01 from Kali, and confirm the alert ap
 on the Wazuh dashboard while the attack is running.
 
 > Before this phase: close browsers/Slack/etc. on the host. 12 GB of VMs + 4 GB host
-> is the whole 16 GB — there is no slack.
+> is the whole 16 GB. There is no slack.
 
 ---
 
-## Snapshots — shut down between sessions without losing state
+## Snapshots: shut down between sessions without losing state
 
 I snapshot **every VM in a clean, configured state** so I can power everything off
 between sessions and restore exact state later.
 
 ### Recommended snapshot points
-1. `base-installed` — OS installed, static IP set, NAT still attached.
-2. `configured` — domain joined / Docker up / agents + Sysmon installed, NAT detached.
-3. `pre-attack-clean` — the state I revert to before each fresh red-team run.
+1. `base-installed`: OS installed, static IP set, NAT still attached.
+2. `configured`: domain joined / Docker up / agents + Sysmon installed, NAT detached.
+3. `pre-attack-clean`: the state I revert to before each fresh red-team run.
 
 ### Take a snapshot
 ```powershell
@@ -133,7 +133,7 @@ $vbox = "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe"
 ```powershell
 & $vbox controlvm "WAZUH01" savestate     # freezes to disk; restores in seconds
 ```
-`savestate` writes the RAM to disk so nothing is lost and startup is quick — ideal for
+`savestate` writes the RAM to disk so nothing is lost and startup is quick, ideal for
 pausing a phase. Use full `poweroff` + snapshot-restore when I want a *clean* slate.
 
 ---
@@ -146,4 +146,4 @@ pausing a phase. Use full `poweroff` + snapshot-restore when I want a *clean* sl
 | Attack Active Directory | KALI01, DC01, WS01 | WAZUH01, UB01 | 12 GB |
 | Build detections / replay | WAZUH01, DC01, target | KALI01 | 10–12 GB |
 | Prove real-time detection | DC01 (2 GB), WAZUH01, KALI01 | WS01, UB01 | 12 GB |
-| Pause for the day | — savestate all — | — | 0 |
+| Pause for the day | savestate all: | - | 0 |
