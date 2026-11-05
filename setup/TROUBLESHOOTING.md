@@ -4,8 +4,7 @@ These are the actual problems I ran into standing up the lab on a Windows 10 hos
 exactly how I fixed each one. They're documented so a reader can reproduce the lab
 without losing the time I lost.
 
-> **Reviewer note:** this file is honest engineering evidence, real infrastructure
-> problems, diagnosed and solved, not a frictionless fantasy build.
+> **Note:** these are real infrastructure problems I hit, diagnosed, and solved.
 
 ---
 

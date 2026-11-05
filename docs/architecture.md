@@ -5,7 +5,7 @@ for the `security-homelab`. The lab is intentionally sized to run on a **16 GB h
 by never powering on every machine at once, see
 [low-ram-operating-guide.md](low-ram-operating-guide.md).
 
-> **Reviewer note:** the whole design pivots on one constraint: I never run the
+> **Note:** the whole design pivots on one constraint: I never run the
 > red-team VMs and the SIEM simultaneously. That trade-off is what makes a full
 > AD + SIEM detection lab fit in 16 GB. Look at the phase table below and in the
 > low-RAM guide to see how I budgeted it.

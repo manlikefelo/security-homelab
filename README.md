@@ -44,7 +44,7 @@ Full diagram, IP scheme, and per-VM RAM/CPU budget: **[docs/architecture.md](doc
 | [`docs/low-ram-operating-guide.md`](docs/low-ram-operating-guide.md) | Exactly which VMs to power on per phase + snapshotting |
 | [`docs/verification.md`](docs/verification.md) | Checklist proving the lab works (with screenshot slots) |
 | [`docs/build-log.md`](docs/build-log.md) | Dated record of actually building the lab. What's done & verified |
-| [`docs/reviewer-path.md`](docs/reviewer-path.md) | A 3-minute guided tour for a hiring manager |
+| [`docs/reviewer-path.md`](docs/reviewer-path.md) | A short guide to this repo |
 | [`setup/00`–`05`](setup/) | Numbered, teach-as-you-go build guides |
 | [`scripts/ad/`](scripts/ad/) | Idempotent PowerShell to build the domain + inject misconfigs |
 | [`scripts/sysmon/`](scripts/sysmon/) | Sysmon install using the SwiftOnSecurity config |
@@ -104,18 +104,18 @@ or restore a snapshot, see the [operating guide](docs/low-ram-operating-guide.md
 
 ## Showcase
 
-A quick highlight reel of what this repo demonstrates: the parts I'm proudest of:
+What this repo demonstrates:
 
 - **Constraint-driven engineering.** A complete AD + SIEM detection lab that runs on
   16 GB by phasing workloads: every phase budgeted under 12 GB, with a documented
-  8 GB minimum-viable variant. → [architecture](docs/architecture.md) ·
+  8 GB minimum-viable variant. See [architecture](docs/architecture.md) ·
   [operating guide](docs/low-ram-operating-guide.md)
 - **Offense + defense of the same findings.** Four intentional AD misconfigurations
   (Kerberoasting, AS-REP roasting, DCSync, Domain Admins nesting), each annotated with
-  the attack (MITRE ATT&CK IDs) *and* how a defender detects it. →
+  the attack (MITRE ATT&CK IDs) *and* how a defender detects it. See
   [03-inject-misconfigs.ps1](scripts/ad/03-inject-misconfigs.ps1)
 - **Real detection pipeline.** Sysmon (SwiftOnSecurity config) → Wazuh single-node,
-  ending in a live Kerberoast attack that produces a Wazuh alert. →
+  ending in a live Kerberoast attack that produces a Wazuh alert. See
   [verification](docs/verification.md)
 - **Red→Blue project walkthroughs.** Four end-to-end projects that attack a
   misconfiguration and then detect it with a matching custom Wazuh rule: the attacks
@@ -126,7 +126,7 @@ A quick highlight reel of what this repo demonstrates: the parts I'm proudest of
 - **Reproducible.** Numbered guides + idempotent scripts rebuild the whole lab from
   scratch. 100% free tooling.
 
-**→ Hiring manager?** Start with the [3-minute reviewer path](docs/reviewer-path.md).
+**New here?** Start with the [repo guide](docs/reviewer-path.md).
 
 ---
 
@@ -140,7 +140,7 @@ A quick highlight reel of what this repo demonstrates: the parts I'm proudest of
 | **Detection engineering** | Mapping each attack to its Windows event IDs + MITRE ATT&CK technique |
 | **Infrastructure / IaC** | Idempotent PowerShell, docker-compose, reproducible network design |
 | **Security hygiene** | Secret management, network isolation, safe handling of vulnerable systems |
-| **Technical writing** | Teach-as-you-go guides, reviewer path, verification evidence |
+| **Technical writing** | Teach-as-you-go guides, repo guide, verification evidence |
 
 ---
 

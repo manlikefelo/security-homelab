@@ -3,7 +3,7 @@
 Goal: bring up a single-node Wazuh stack (indexer + manager + dashboard) via
 docker-compose on WAZUH01 (`10.10.10.50`), ready to receive agent logs.
 
-> **Reviewer note:** the [`docker-compose.yml`](../wazuh/docker-compose.yml) pins
+> **Note:** the [`docker-compose.yml`](../wazuh/docker-compose.yml) pins
 > image versions and reads **all** credentials from a gitignored `.env`. Certs are
 > generated locally by [`generate-certs.sh`](../wazuh/generate-certs.sh). The repo
 > ships zero secrets.
@@ -58,4 +58,4 @@ docker compose down            # stop (keeps volumes/data)
 docker compose down -v         # stop AND wipe indexed data
 ```
 
-→ Next: **[04-sysmon-and-agents.md](04-sysmon-and-agents.md)**
+Next: **[04-sysmon-and-agents.md](04-sysmon-and-agents.md)**

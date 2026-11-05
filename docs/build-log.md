@@ -1,11 +1,11 @@
 # Build log
 
 A dated record of actually standing up this lab on my host. What I built, what I
-verified, and the real issues I hit. This is the honest companion to the aspirational
+verified, and the real issues I hit. This is the record behind the
 [verification.md](verification.md) checklist: everything ticked here I ran and
 confirmed myself.
 
-> **Reviewer note:** this log shows the lab isn't just documentation: I built it,
+> **Note:** I built this lab myself,
 > hit real infrastructure problems, and solved them. See
 > [../setup/TROUBLESHOOTING.md](../setup/TROUBLESHOOTING.md) for the fixes.
 
@@ -28,7 +28,7 @@ confirmed myself.
 | KALI01 | 4 GB | 2 | 50 GB | BIOS |
 | WAZUH01 | 6 GB | 2 | 50 GB | BIOS |
 
-\* Switched DC01 from EFI → BIOS after an EFI black-screen boot hang under the
+\* Switched DC01 from EFI to BIOS after an EFI black-screen boot hang under the
 Hyper-V compatibility layer (TROUBLESHOOTING #1). The Linux VMs (UB01, KALI01,
 WAZUH01) use BIOS for the same reason.
 † WS01 is the exception: the **Win11 25H2 Enterprise Eval** build boots EFI cleanly
@@ -45,7 +45,7 @@ on this host (vTPM 2.0 + Secure Boot), so it runs UEFI where the older images co
 
 - [x] Windows Server 2022 installed (Standard, Desktop Experience), Guest Additions
       installed.
-- [x] Static IP **10.10.10.10/24** on the host-only adapter, DNS → self (127.0.0.1).
+- [x] Static IP **10.10.10.10/24** on the host-only adapter, DNS set to self (127.0.0.1).
 - [x] Renamed to **DC01**.
 - [x] Promoted to first DC of forest **`lab.local`** (NetBIOS `LAB`), AD DS + DNS.
 - [x] Verified with `Get-ADDomain` / `Get-ADForest`:
@@ -55,7 +55,7 @@ on this host (vTPM 2.0 + Secure Boot), so it runs UEFI where the older images co
       - **SYSVOL** and **NETLOGON** shares present (AD healthy).
 
 ### Identity seeded (10 users, 8 groups, OUs)
-`OU=LAB` → Users / Groups / ServiceAccounts / Workstations. Groups: IT-Admins,
+`OU=LAB` containing Users / Groups / ServiceAccounts / Workstations. Groups: IT-Admins,
 IT-Helpdesk, Finance, HR, Sales, Engineering, Executives, FileShare-RW.
 
 Passwords use a **hybrid scheme** (deliberately weak, varied) so both password-spraying
@@ -84,22 +84,22 @@ Kali 2026.2, login `felix`. Driven headless from the host via VBox `guestcontrol
 irrelevant since I run everything by copying scripts in and executing them).
 
 Networking via NetworkManager (`nmcli`), both profiles set to autoconnect:
-- **eth0 = NAT** → DHCP `10.0.2.15`, default route, internet for apt/docker.
-- **eth1 = host-only** → static **`10.10.10.40/24`**, DNS `10.10.10.10`, `never-default`.
+- **eth0 = NAT**: DHCP `10.0.2.15`, default route, internet for apt/docker.
+- **eth1 = host-only**: static **`10.10.10.40/24`**, DNS `10.10.10.10`, `never-default`.
 
-Verified from Kali: pings DC01, `nslookup dc01.lab.local` → 10.10.10.10, and public
+Verified from Kali: pings DC01, `nslookup dc01.lab.local` returns 10.10.10.10, and public
 internet reachable. Tooling shipped with Kali (no install needed): `impacket-GetUserSPNs`,
 `john` (krb5tgs), `hashcat v7.1.2`, `netexec`.
 
 ### Project 01: Kerberoasting run end-to-end
 As low-priv user `a.mokaya`, `impacket-GetUserSPNs ... -request` pulled the TGS
-(RC4/etype 23) for `svc_sql`. Cracked offline → **`svc_sql : P@ssw0rd`** in <1s.
+(RC4/etype 23) for `svc_sql`. Cracked offline: **`svc_sql : P@ssw0rd`** in <1s.
 Full record + evidence: [`../../ad-attack-chain/engagement/01-kerberoasting/RUN-LOG.md`](https://github.com/manlikefelo/ad-attack-chain/blob/main/engagement/01-kerberoasting/RUN-LOG.md).
 
 **Real issue hit:** hashcat found no compute backend (`CL_PLATFORM_NOT_FOUND_KHR`):
 GPU-less VM and Kali 2026.2's mirror had no `pocl` (CPU OpenCL) package. Rather than
 fake the canonical `hashcat -m 13100`, I cracked the identical hash with **John the
-Ripper** on CPU. Documented honestly in the run log.
+Ripper** on CPU. Documented in the run log.
 
 ### Snapshots
 - [x] `clean-install`: fresh Kali before any lab config.
@@ -123,10 +123,10 @@ WAZUH01 (Ubuntu Server 22.04.5, `10.10.10.50`) now runs the full single-node Waz
 Full transcript: [`../setup/evidence/wazuh01-stack-verification.txt`](../setup/evidence/wazuh01-stack-verification.txt).
 
 Networking is dual-homed as designed: **enp0s3 = NAT** (`10.0.2.15`, for image pulls)
-and **enp0s8 = host-only** (`10.10.10.50`, isolated lab, DNS → DC01). The stack has a
+and **enp0s8 = host-only** (`10.10.10.50`, isolated lab, DNS pointing at DC01). The stack has a
 `restart` policy so it comes back on its own after a reboot.
 
-### Deviations from setup/03 (recorded honestly)
+### Deviations from setup/03
 - The running deployment is the upstream Wazuh **single-node compose** layout
   (project at `~/wazuh2`), so it currently ships the stock demo credentials inline and
   publishes the dashboard on **443** rather than the `.env`-driven `:5601` design in
@@ -143,7 +143,7 @@ and **enp0s8 = host-only** (`10.10.10.50`, isolated lab, DNS → DC01). The stac
   saved DC01's state to free its RAM, then cold-booted WAZUH01 clean. It came up
   healthy with ~5.3 GB free and no swap in use. Confirms the phased/low-RAM operating
   model: the indexer needs its memory to even start.
-- **Adapter drift.** WAZUH01's NAT nic had been left as *bridged*; reset nic1 → NAT and
+- **Adapter drift.** WAZUH01's NAT nic had been left as *bridged*; reset nic1 to NAT and
   re-added the `127.0.0.1:2222 → :22` SSH port-forward used to drive the box headless
   (its server console framebuffer freezes after early boot, cosmetic).
 
@@ -187,7 +187,7 @@ Stood up **WS01**, the domain-joined Windows workstation.
   black-screened), so WS01 runs EFI + vTPM 2.0 and needed no TPM-bypass. Boot the ISO
   from the UEFI **Boot Manager**: the "press any key to boot from CD" prompt times out
   faster than host scancode injection can catch it.
-- **Identity/network:** renamed the OOBE-generated `DESKTOP-HKAKI8M` → **WS01**; local
+- **Identity/network:** renamed the OOBE-generated `DESKTOP-HKAKI8M` to **WS01**; local
   admin is `workstation 1` (has a space). Ethernet = NAT DHCP (internet), Ethernet 2 =
   host-only static **10.10.10.20/24**, DNS **10.10.10.10**.
 - **Domain join:** joined **lab.local** and verified `PartOfDomain=True` +
@@ -197,7 +197,7 @@ Stood up **WS01**, the domain-joined Windows workstation.
   validated, service Running, logging Event ID 1. Installed the **Wazuh agent 4.9.0**
   pointing at the manager `10.10.10.50`, added the Sysmon eventchannel to `ossec.conf`.
   It enrolled as **ID 002** and the manager reports it **Active** with its real OS
-  string + live keep-alive → it's actively reporting.
+  string + live keep-alive, so it's actively reporting.
 
 **Issues hit / notes:**
 - **Driving Win11 headless is the hard part.** VBox guestcontrol runs *non-elevated*
@@ -248,7 +248,7 @@ vulnerable Linux services as **Docker containers** rather than extra VMs, to sav
 - **Agent enrolled but stuck "Unknown" (`Last keep alive: null`).** The manager held a
   stale registration whose key didn't match the agent's, so keep-alives were silently
   rejected. Fix: removed the stale agent on the manager (`manage_agents -r`) and
-  re-enrolled fresh via `agent-auth` → new matching key, agent went **Active** (new id 004).
+  re-enrolled fresh via `agent-auth`, giving a new matching key, agent went **Active** (new id 004).
 - **`sudo` on WAZUH01 needs a password** (felix isn't NOPASSWD there, unlike UB01), so
   headless `sudo docker …` calls hung on the invisible password prompt until I switched to
   `sudo -S` with the password piped in. Not a fault: a driving gotcha worth recording.
@@ -263,8 +263,8 @@ vulnerable Linux services as **Docker containers** rather than extra VMs, to sav
 Powered UB01 back up from the `configured-victim` snapshot to confirm it's ready for the
 web-pentest project. Verified live over SSH (`127.0.0.1:2223`, `felix`):
 - **Host-only IP** `10.10.10.30/24` on `enp0s8`, up.
-- **Docker victims all serving:** `juice-shop` (:3000 → HTTP 200), `dvwa`
-  (:8080 → 302 to login), `ssh-victim` (:2222): all `Up`.
+- **Docker victims all serving:** `juice-shop` (:3000 returns HTTP 200), `dvwa`
+  (:8080 returns 302 to login), `ssh-victim` (:2222): all `Up`.
 
 **Gotcha found:** the Wazuh agent is **not present on this snapshot** (no `/var/ossec`,
 no `wazuh-agent` unit). The agent I enrolled on 2026-07-30 (id 004, Active) was installed
@@ -277,7 +277,7 @@ SIEM anyway), then re-snapshot so it sticks.
 ---
 
 ## Remaining
-- [x] KALI01: installed, DNS → DC, Project 01 (Kerberoasting) proven.
+- [x] KALI01: installed, DNS pointing at DC, Project 01 (Kerberoasting) proven.
 - [x] WAZUH01: Ubuntu + Wazuh single-node SIEM up & verified (4.9.0, indexer green).
 - [x] DC01 Wazuh agent enrolled (Active) + Kerberoast detected via rule 100010.
 - [x] WS01: Win11 domain-joined workstation + Sysmon + agent **Active**.

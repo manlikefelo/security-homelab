@@ -3,7 +3,7 @@
 Goal: deploy deliberately vulnerable Linux services as **Docker containers** on UB01
 (`10.10.10.30`) instead of full VMs: the RAM-saving decision from the architecture.
 
-> **Reviewer note:** containerising the victims is what lets me rebuild a target with
+> **Note:** containerising the victims is what lets me rebuild a target with
 > one command and keeps the whole Linux attack surface under 2 GB. See
 > [../victims/docker-compose.yml](../victims/docker-compose.yml).
 

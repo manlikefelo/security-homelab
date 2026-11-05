@@ -3,7 +3,7 @@
 Proof the lab is built correctly and the **attack → log → detect** pipeline works.
 Work top to bottom; each item has a command/action and the expected result.
 
-> **Reviewer note:** checked items have linked evidence or a recorded result. Unchecked
+> **Note:** checked items have linked evidence or a recorded result. Unchecked
 > items weren't formally signed off in this checklist. Sections 3, 5, 6, and 8 link the
 > evidence that AD, Wazuh, and an end-to-end detection worked.
 

@@ -7,8 +7,7 @@ This guide tells me *exactly which VMs to power on* for each phase of a project,
 how to move between phases without losing state. It is the operational companion to
 [architecture.md](architecture.md).
 
-> **Reviewer note:** this file is the proof that I designed the lab around a real
-> hardware constraint instead of hand-waving it. Each phase has a concrete RAM sum.
+> **Note:** the lab is designed around a real hardware constraint. Each phase has a concrete RAM sum.
 
 ---
 
@@ -82,7 +81,7 @@ vulnerable service) and watch the alerts land.
 
 ## Phase 3: LIVE-DETECTION validation (DC + Wazuh + Kali, DC squeezed to 2 GB)
 
-Goal: the money shot, attacker, SIEM, and DC all live at once, so an attack from Kali
+Goal: attacker, SIEM, and DC all live at once, so an attack from Kali
 produces a Wazuh alert **in real time**. This is the tightest phase.
 
 **Power ON (in this order):**

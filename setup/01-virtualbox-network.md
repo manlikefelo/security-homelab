@@ -4,7 +4,7 @@ Goal: create one **host-only** network (`10.10.10.0/24`) that carries all lab tr
 isolated from the home LAN. NAT is added per-VM only for build-time downloads and
 detached afterwards.
 
-> **Reviewer note:** isolation is a safety control: the lab contains deliberately
+> **Note:** isolation is a safety control: the lab contains deliberately
 > vulnerable machines. Look at how NAT is *detached* before any attack phase.
 
 ---
@@ -31,7 +31,7 @@ $vbox = "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe"
 For **each** VM, in **Settings → Network**:
 
 - **Adapter 1** → *Host-only Adapter* → select the network above. **Always on.**
-- **Adapter 2** → *NAT*. **Enable only while building**, then uncheck "Cable
+- **Adapter 2**: *NAT*. **Enable only while building**, then uncheck "Cable
   Connected" (or disable the adapter) before attack/detection phases.
 
 CLI example for DC01:
@@ -97,4 +97,4 @@ nslookup dc01.lab.local 10.10.10.10   # once AD DNS is up (guide 02)
 | KALI01  | 10.10.10.40  | 10.10.10.10 |
 | WAZUH01 | 10.10.10.50  | 10.10.10.10 |
 
-→ Next: **[02-active-directory.md](02-active-directory.md)**
+Next: **[02-active-directory.md](02-active-directory.md)**

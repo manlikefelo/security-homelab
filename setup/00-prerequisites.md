@@ -2,9 +2,9 @@
 
 Everything here is **free**. Nothing binary is committed to this repo, instead I
 list the exact official sources, versions, and where to verify checksums. Follow the
-guides in order (`00` → `05`).
+guides in order (`00` to `05`).
 
-> **Reviewer note:** I deliberately keep ISOs and installers *out of git* (see
+> **Note:** I deliberately keep ISOs and installers *out of git* (see
 > [.gitignore](../.gitignore)) and document reproducible download sources instead.
 > That keeps the repo small, legal, and reproducible.
 

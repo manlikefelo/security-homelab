@@ -3,7 +3,7 @@
 Goal: promote DC01 to a Domain Controller for **`lab.local`**, build a realistic org
 (users, groups, OUs), inject the intentional weaknesses, then join WS01 to the domain.
 
-> **Reviewer note:** the three PowerShell scripts in
+> **Note:** the three PowerShell scripts in
 > [../scripts/ad/](../scripts/ad/) are the heart of this project. Each is idempotent
 > and prompts for secrets at runtime (nothing sensitive is committed).
 > [`03-inject-misconfigs.ps1`](../scripts/ad/03-inject-misconfigs.ps1) documents,
@@ -75,4 +75,4 @@ After reboot, log in as a domain user (e.g. `LAB\a.mokaya`) to confirm the join.
 - `Get-ADUser b.otieno -Properties DoesNotRequirePreAuth` shows `True`.
 - WS01 appears in **AD Users and Computers → Computers**.
 
-→ Next: **[03-wazuh-siem.md](03-wazuh-siem.md)**
+Next: **[03-wazuh-siem.md](03-wazuh-siem.md)**

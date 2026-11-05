@@ -4,7 +4,7 @@ Goal: install Sysmon (SwiftOnSecurity config) on the Windows hosts for rich
 telemetry, then install the Wazuh agent on **every** host so all logs flow to
 WAZUH01. Finish by confirming Windows events + Sysmon are visible in the dashboard.
 
-> **Reviewer note:** this guide closes the loop, after it, an action on any host
+> **Note:** this guide closes the loop, after it, an action on any host
 > becomes a searchable event in the SIEM. The Sysmon step is what makes Windows
 > telemetry *useful* (process/network/image-load), not just security-audit noise.
 
@@ -74,4 +74,4 @@ screenshots.
 
 **Snapshot** each host as `configured` once agents report Active.
 
-→ Next: **[05-linux-victims.md](05-linux-victims.md)**
+Next: **[05-linux-victims.md](05-linux-victims.md)**
