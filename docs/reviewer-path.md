@@ -26,7 +26,7 @@ through this repo and what each stop proves about how I work.
 
 ### Minute 3 — the proof it works (is this real or aspirational?)
 4. **[verification.md](verification.md)** — the checklist ending in a live
-   Kerberoast → Wazuh alert. The screenshot placeholders are the evidence.
+   Kerberoast → Wazuh alert.
    → *Proves:* the attack → log → detect pipeline actually closes.
 5. **[ad-attack-chain → Phase 01 RUN-LOG](https://github.com/manlikefelo/ad-attack-chain/blob/main/engagement/01-kerberoasting/RUN-LOG.md)**
    — the one to open if you want *proof, not prose*: the actual command output and
